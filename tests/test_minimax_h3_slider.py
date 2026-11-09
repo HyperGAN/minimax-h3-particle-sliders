@@ -1,0 +1,1251 @@
+"""MiniMax-H3 UNI slider: CPU mocks only. No Hub, no GPU, no H3 weights."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+import torch
+import yaml
+
+from conceptmod.textsliders import minimax_h3_backend as installed_h3
+
+PACKAGE_ROOT = Path(installed_h3.__file__).resolve().parent
+DOCS_ROOT = Path(__file__).resolve().parents[1] / "docs"
+
+from conceptmod.textsliders.minimax_h3_backend import (
+    DEFAULT_LORA_UP_INIT_STD,
+    DEFAULT_MODEL,
+    DEFAULT_SAMPLE_DURATION,
+    DEFAULT_SAMPLE_SCALES,
+    DEFAULT_TASK_INDEX,
+    DEFAULT_VARIANT,
+    DEFAULT_WORKFLOW,
+    FREEZE_LIST,
+    H3_FPS,
+    HOSTED_NOT_IN_WEIGHTS,
+    LORA_ATTN_CLASS,
+    LORA_LINEAR_NAMES,
+    ArchitectureMismatch,
+    AttnLoRANetwork,
+    DummyOmniTransformer,
+    DummyTokenizer,
+    MiniMaxH3Backend,
+    h3_canvas_hw,
+    h3_num_frames,
+    h3_pack_feature_dim,
+    place_minimax_h3_pipeline,
+    resolve_h3_lora_path,
+    same_device,
+)
+from conceptmod.textsliders.minimax_h3_uni import (
+    DEFAULT_HOLD_MODE,
+    HOLD_MODE_ATTRIBUTES,
+    HOLD_MODE_NON_CONCEPT,
+    apply_unused_hold,
+    concept_token_ids,
+    cosine_l2,
+    embed_gap_energy_frac,
+    hold_effectiveness_metrics,
+    minimax_h3_minus_canary,
+    minimax_h3_uni_total_loss,
+    minimax_h3_uni_velocity_loss,
+    minimax_h3_unused_hold_loss,
+    pin_unused_attributes,
+    resolve_hold_mode,
+    unused_hold_mask,
+    unused_token_ids,
+    velocity_pair,
+)
+from conceptmod.textsliders.diag_minimax_h3_uni import (
+    COS_L2_KEYS,
+    DIAG_ROW_KEYS,
+    HOW_TO_READ,
+    STUDENT_KEYS,
+    diagnose_row,
+    format_diag_table,
+    parse_diag_args,
+    run_diag,
+)
+from conceptmod.textsliders.train_lora_minimax_h3 import (
+    load_slider_rows,
+    main as train_main,
+    parse_args,
+    parse_sample_scales,
+    sample_prompts_from_rows,
+    train,
+)
+
+
+def test_resolved_model_id_is_minimax_h3():
+    assert DEFAULT_MODEL == "MiniMaxAI/MiniMax-H3"
+    assert DEFAULT_VARIANT == "FL2VA"
+    assert DEFAULT_WORKFLOW == "t2va"
+    assert DEFAULT_TASK_INDEX == "FL2VA/model_index.json"
+    args = parse_args(["--dummy"])
+    assert args.model_id == "MiniMaxAI/MiniMax-H3"
+    assert args.variant == "FL2VA"
+    assert args.workflow == "t2va"
+    assert args.short_side == 768
+    assert args.guidance == 0.0
+    assert args.rank == 8
+    assert args.lora_up_init_std == DEFAULT_LORA_UP_INIT_STD == 0.02
+    assert args.encoder_device is None
+    assert args.load_h3_lora is None
+    assert args.no_sample is False
+    assert args.sample_scales == "0,1"
+    assert args.sample_duration == DEFAULT_SAMPLE_DURATION == 5.0
+    assert args.sample_fps == H3_FPS == 24.0
+    assert args.sample_short_side is None
+    assert args.hold_mode == DEFAULT_HOLD_MODE == HOLD_MODE_NON_CONCEPT
+    assert args.hold_weight == 1.0
+    assert args.diag is False
+    assert parse_sample_scales(args.sample_scales) == list(DEFAULT_SAMPLE_SCALES)
+
+
+def test_no_hunyuan_hub_id_in_new_files():
+    root = PACKAGE_ROOT
+    for path in (
+        root / "minimax_h3_backend.py",
+        root / "minimax_h3_uni.py",
+        root / "diag_minimax_h3_uni.py",
+        root / "train_lora_minimax_h3.py",
+        root / "data" / "prompts-minimax-h3.yaml",
+        root / "data" / "config-minimax-h3.yaml",
+        root / "data" / "prompts-minimax-h3-chiaroscuro.yaml",
+        root / "data" / "config-minimax-h3-chiaroscuro.yaml",
+        (DOCS_ROOT / "minimax-h3-slider.md"),
+    ):
+        text = path.read_text()
+        assert "tencent/HunyuanImage-3.0" not in text
+        assert "HunyuanImage-3.0" not in text
+
+
+def test_lora_attaches_to_minimax_h3_attention_linears():
+    backend = MiniMaxH3Backend(device="cpu", dummy=True)
+    names = backend.lora_module_names()
+    assert names
+    joined = " ".join(names)
+    assert LORA_ATTN_CLASS == "MiniMaxH3Attention"
+    for piece in LORA_LINEAR_NAMES:
+        token = piece.replace(".", "-")
+        assert token in joined, (piece, names)
+    assert "adaln" not in joined.lower()
+    params = backend.trainable_parameters()
+    assert params
+    enc_ids = {id(p) for p in backend.encoder.parameters()}
+    assert not enc_ids.intersection({id(p) for p in params})
+    for block in backend.transformer.transformer_blocks:
+        assert id(block.adaln_proj.weight) not in {id(p) for p in params}
+
+
+def test_does_not_fake_predict_v():
+    backend = MiniMaxH3Backend(device="cpu", dummy=True)
+    with pytest.raises(ArchitectureMismatch, match="packed multimodal sequence"):
+        backend.predict_v("person", torch.zeros(1, 2, 4), torch.tensor([1.0]))
+    plus = backend.encode_text("old person")
+    packed = backend.pack_t2va(plus)
+    assert packed.position_ids.shape[-1] == 3
+    out = backend.forward_velocity(packed, scale=0.0)
+    assert out.sample.shape[0] == 1
+    assert out.audio_sample.shape[0] == 1
+
+
+def test_freeze_list_is_encoder_and_vaes():
+    assert FREEZE_LIST == (
+        "text_encoder",
+        "visual_vae",
+        "audio_vae",
+        "processor",
+        "tokenizer",
+    )
+    assert "H3-Context-IR" in HOSTED_NOT_IN_WEIGHTS
+    assert "H3-Regenerate-2K" in HOSTED_NOT_IN_WEIGHTS
+    backend = MiniMaxH3Backend(device="cpu", dummy=True)
+    assert all(not p.requires_grad for p in backend.encoder.parameters())
+    assert all(not p.requires_grad for p in backend.visual_vae.parameters())
+    assert all(not p.requires_grad for p in backend.audio_vae.parameters())
+
+
+def test_pin_unused_attributes():
+    rows = pin_unused_attributes("old person", "person", ["male", "female"])
+    assert rows == [
+        ("male old person", "male person"),
+        ("female old person", "female person"),
+    ]
+    assert pin_unused_attributes("old person", "person", []) == [("old person", "person")]
+
+
+def test_hold_unused_tokens_not_concept_words():
+    tok = DummyTokenizer()
+    pos, neu = "male old person", "male person"
+    concept = concept_token_ids(tok, pos, neu)
+    unused = unused_token_ids(tok, ["male", "female"])
+    ids = tok.encode(neu)
+    mask = unused_hold_mask(ids, unused, concept, hold_mode=HOLD_MODE_ATTRIBUTES)
+    words = neu.split()
+    held = {words[i] for i, flag in enumerate(mask.tolist()) if flag and i < len(words)}
+    assert "male" in held
+    assert "old" not in held
+    assert "person" not in held
+    pos_ids = tok.encode(pos)
+    pos_held = {
+        pos.split()[i]
+        for i, flag in enumerate(
+            unused_hold_mask(
+                pos_ids, unused, concept, hold_mode=HOLD_MODE_ATTRIBUTES
+            ).tolist()
+        )
+        if flag
+    }
+    assert "old" not in pos_held
+    assert "male" in pos_held
+    assert "person" not in pos_held
+
+
+def test_non_concept_hold_pins_shared_subject_not_lighting():
+    """Default hold: every non-concept token → encode(neu). Lighting stays free."""
+    tok = DummyTokenizer()
+    pos = "male person sitting shirt, chiaroscuro dramatic"
+    neu = "male person sitting shirt, flat lighting"
+    concept = concept_token_ids(tok, pos, neu)
+    unused = unused_token_ids(tok, ["male", "female"])
+    plus_ids = tok.encode(pos)
+    mask = unused_hold_mask(plus_ids, unused, concept)
+    assert resolve_hold_mode(None) == HOLD_MODE_NON_CONCEPT
+    words = pos.split()
+    held = {words[i] for i, flag in enumerate(mask.tolist()) if flag}
+    free = {words[i] for i, flag in enumerate(mask.tolist()) if not flag}
+    assert "male" in held
+    assert "person" in held
+    assert "sitting" in held
+    assert "shirt," in held
+    assert "chiaroscuro" in free
+    assert "dramatic" in free
+    assert "old" not in held
+
+
+def test_attributes_hold_leaves_shared_subject_free():
+    """v1/v2 leak: attribute-only hold does not pin shared subject tokens."""
+    tok = DummyTokenizer()
+    pos, neu = "male old person", "male person"
+    concept = concept_token_ids(tok, pos, neu)
+    unused = unused_token_ids(tok, ["male"])
+    plus_ids = tok.encode(pos)
+    mask = unused_hold_mask(
+        plus_ids, unused, concept, hold_mode=HOLD_MODE_ATTRIBUTES
+    )
+    words = pos.split()
+    held = {words[i] for i, flag in enumerate(mask.tolist()) if flag}
+    assert held == {"male"}
+    with pytest.raises(ValueError, match="hold_mode"):
+        unused_hold_mask(plus_ids, unused, concept, hold_mode="lyric")
+
+
+def test_apply_unused_hold_copies_neu_not_concept():
+    tok = DummyTokenizer()
+    pos, neu = "male old person", "male person"
+    plus_ids = tok.encode(pos)
+    neu_ids = tok.encode(neu)
+    concept = concept_token_ids(tok, pos, neu)
+    unused = unused_token_ids(tok, ["male"])
+    mask = unused_hold_mask(
+        plus_ids, unused, concept, hold_mode=HOLD_MODE_ATTRIBUTES
+    )
+    plus_h = torch.arange(len(plus_ids) * 3, dtype=torch.float32).reshape(len(plus_ids), 3)
+    neu_h = torch.ones(len(neu_ids), 3)
+    held = apply_unused_hold(plus_h, neu_h, plus_ids, neu_ids, mask)
+    # "male" is unused → encode(neu). "old" is concept → stays plus.
+    # attributes mode leaves shared "person" as plus (v1/v2 leak).
+    assert torch.allclose(held[0], neu_h[0])
+    assert torch.allclose(held[1], plus_h[1])
+    assert torch.allclose(held[2], plus_h[2])
+
+
+def test_apply_non_concept_hold_copies_shared_subject():
+    tok = DummyTokenizer()
+    pos, neu = "male old person", "male person"
+    plus_ids = tok.encode(pos)
+    neu_ids = tok.encode(neu)
+    concept = concept_token_ids(tok, pos, neu)
+    unused = unused_token_ids(tok, ["male"])
+    mask = unused_hold_mask(plus_ids, unused, concept, hold_mode=HOLD_MODE_NON_CONCEPT)
+    plus_h = torch.arange(len(plus_ids) * 3, dtype=torch.float32).reshape(len(plus_ids), 3)
+    neu_h = torch.stack([
+        torch.tensor([10.0, 11.0, 12.0]),
+        torch.tensor([20.0, 21.0, 22.0]),
+    ])
+    held = apply_unused_hold(plus_h, neu_h, plus_ids, neu_ids, mask)
+    # shared subject "person" and attribute "male" → encode(neu).
+    # concept "old" stays plus.
+    assert torch.allclose(held[0], neu_h[0])
+    assert torch.allclose(held[1], plus_h[1])
+    assert torch.allclose(held[2], neu_h[1])
+    assert not torch.allclose(held[2], plus_h[2])
+
+
+def test_uni_velocity_has_no_minus_teacher():
+    plus = torch.ones(2, 4)
+    zero = torch.zeros(2, 4)
+    loss = minimax_h3_uni_velocity_loss(plus, plus, zero, zero)
+    assert float(loss.item()) == pytest.approx(0.0)
+    assert float(minimax_h3_uni_velocity_loss(plus, zero, zero, zero).item()) > 0
+    canary = minimax_h3_minus_canary(-plus, zero)
+    assert float(canary.item()) > 0
+    total = minimax_h3_uni_total_loss(plus, plus, zero, zero)
+    assert float(total.item()) == pytest.approx(0.0)
+    assert float(total.item()) != pytest.approx(float((total + canary).item()))
+
+
+def test_unused_hold_mse_skips_concept_tokens():
+    tok = DummyTokenizer()
+    pos, neu = "male old person", "male person"
+    ids = tok.encode(neu)
+    concept = concept_token_ids(tok, pos, neu)
+    unused = unused_token_ids(tok, ["male"])
+    mask = unused_hold_mask(ids, unused, concept, hold_mode=HOLD_MODE_ATTRIBUTES)
+    student = torch.zeros(len(ids), 3)
+    neu_e = torch.zeros(len(ids), 3)
+    student[0] = torch.tensor([1.0, 0.0, 0.0])
+    if student.shape[0] > 1:
+        student[-1] = torch.tensor([0.0, 4.0, 0.0])
+    hold = minimax_h3_unused_hold_loss(student, neu_e, mask)
+    only_unused = minimax_h3_unused_hold_loss(student[:1], neu_e[:1], mask[:1])
+    assert float(hold.item()) == pytest.approx(float(only_unused.item()))
+
+
+def test_yaml_pins_unused_and_keeps_concept_free():
+    rows = load_slider_rows(str(PACKAGE_ROOT / "data" / "prompts-minimax-h3.yaml"), "")
+    assert {r["positive"] for r in rows} >= {"male old person", "female old person"}
+    assert {r["neutral"] for r in rows} >= {"male person", "female person"}
+    for r in rows:
+        assert "old" in r["positive"]
+        assert "old" not in r["neutral"].split()
+
+
+_H3_LIGHTING_TAILS = (
+    ", chiaroscuro,",
+    ", flat even lighting,",
+    ", washed-out flat featureless lighting",
+)
+
+
+def _h3_subject_clause(caption: str) -> str:
+    """Identity lock before lighting words. Subjects may contain commas."""
+    text = caption.strip()
+    for prefix in ("male ", "female "):
+        if text.lower().startswith(prefix):
+            text = text[len(prefix):]
+            break
+    lower = text.lower()
+    cut = len(text)
+    for tail in _H3_LIGHTING_TAILS:
+        idx = lower.find(tail)
+        if idx != -1:
+            cut = min(cut, idx)
+    return text[:cut].strip().lower()
+
+
+def test_chiaroscuro_yaml_loads_same_subject_lighting():
+    path = (PACKAGE_ROOT / "data" / "prompts-minimax-h3-chiaroscuro.yaml")
+    raw = yaml.safe_load(path.read_text())
+    assert isinstance(raw, list)
+    assert len(raw) == 3
+    required = (
+        "target", "positive", "neutral", "unconditional", "negative",
+        "attributes", "action",
+    )
+    for item in raw:
+        for key in required:
+            assert key in item
+        assert item["action"] == "enhance"
+        assert item["attributes"] == ["male", "female"]
+        subject = _h3_subject_clause(item["target"])
+        assert subject == _h3_subject_clause(item["positive"])
+        assert subject == _h3_subject_clause(item["neutral"])
+        assert subject == _h3_subject_clause(item["unconditional"])
+        assert subject == _h3_subject_clause(item["negative"])
+        assert "chiaroscuro" in item["positive"]
+        assert "Rembrandt key light from the left" in item["positive"]
+        assert "hard single-source side light" in item["positive"]
+        assert "deep black shadows" in item["positive"]
+        assert "high contrast" in item["positive"]
+        assert "no fill" in item["positive"]
+        assert "flat even lighting" in item["neutral"]
+        assert "soft fill" in item["neutral"]
+        assert "low contrast" in item["neutral"]
+        # Lighting delta only: identity locks appear on both poles.
+        subject = _h3_subject_clause(item["target"])
+        assert subject in item["positive"]
+        assert subject in item["neutral"]
+        assert "cartoon" not in item["neutral"]
+        assert "simple flat" not in item["neutral"]
+        assert "chiaroscuro" not in item["neutral"]
+        assert "washed-out" in item["unconditional"]
+        assert "featureless" in item["unconditional"]
+        assert item["unconditional"] == item["negative"]
+    subjects = {_h3_subject_clause(item["target"]) for item in raw}
+    assert subjects == {
+        "person sitting in a chair wearing a blue denim shirt over a white tee",
+        "interior dining room with two wooden windsor chairs, a round wooden table, and a clear glass bowl of bananas apples and oranges",
+        "blue and white ceramic jar with painted bearded scholars in robes exchanging a gift on a wooden table",
+    }
+    rows = load_slider_rows(str(path), "")
+    assert len(rows) == 6
+    assert {r["positive"].split(",")[0] for r in rows} >= {
+        "male person sitting in a chair wearing a blue denim shirt over a white tee",
+        "female person sitting in a chair wearing a blue denim shirt over a white tee",
+    }
+    for row in rows:
+        assert row["positive"].startswith(("male ", "female "))
+        assert _h3_subject_clause(row["positive"]) == _h3_subject_clause(row["neutral"])
+        assert "chiaroscuro" in row["positive"]
+        assert "chiaroscuro" not in row["neutral"]
+        assert "washed-out" in row["unconditional"]
+    joined = " ".join(item["target"] for item in raw)
+    assert "blue denim shirt" in joined
+    assert "white tee" in joined
+    assert "windsor chairs" in joined
+    assert "bananas apples and oranges" in joined
+    assert "painted bearded scholars" in joined
+
+
+def test_chiaroscuro_non_concept_hold_keeps_lighting_free():
+    tok = DummyTokenizer()
+    rows = load_slider_rows(
+        str(PACKAGE_ROOT / "data" / "prompts-minimax-h3-chiaroscuro.yaml"), ""
+    )
+    for row in rows:
+        concept = concept_token_ids(tok, row["positive"], row["neutral"])
+        unused = unused_token_ids(tok, row["attributes"])
+        plus_ids = tok.encode(row["positive"])
+        mask = unused_hold_mask(plus_ids, unused, concept)
+        words = row["positive"].split()
+        held = {words[i] for i, flag in enumerate(mask.tolist()) if flag}
+        free = {words[i] for i, flag in enumerate(mask.tolist()) if not flag}
+        held_norm = {w.strip(",.") for w in held}
+        assert any("chiaroscuro" in w for w in free)
+        assert any("rembrandt" in w.lower() for w in free)
+        assert any("hard" in w for w in free)
+        assert any("shadows" in w for w in free)
+        assert held_norm & {
+            "denim", "shirt", "tee", "windsor", "bowl", "bananas",
+            "jar", "scholars",
+        }
+        # concept ids are lighting-only; shared subject tokens are held.
+        assert concept
+        for i, tid in enumerate(plus_ids):
+            if int(tid) in concept:
+                assert not bool(mask[i])
+            else:
+                assert bool(mask[i])
+
+
+def test_chiaroscuro_config_and_docs_card():
+    cfg = yaml.safe_load(
+        (PACKAGE_ROOT / "data" / "config-minimax-h3-chiaroscuro.yaml").read_text()
+    )
+    assert cfg["prompts_file"] == "conceptmod/textsliders/data/prompts-minimax-h3-chiaroscuro.yaml"
+    assert cfg["pretrained_model"]["name_or_path"] == "MiniMaxAI/MiniMax-H3"
+    assert cfg["pretrained_model"]["variant"] == "FL2VA"
+    assert cfg["pretrained_model"]["workflow"] == "t2va"
+    assert cfg["train"]["recipe"] == "minimax_h3_uni_velocity"
+    assert cfg["train"]["guidance"] == 0
+    assert cfg["train"]["short_side"] == 768
+    assert cfg["network"]["target"] == "MiniMaxH3Attention"
+    assert cfg["network"]["train_adaln"] is False
+    assert cfg["network"]["lora_up_init_std"] == 0.02
+    assert cfg["network"]["rank"] == 16
+    assert cfg["train"]["iterations"] == 2500
+    assert cfg["train"]["hold_mode"] == "non_concept"
+    assert cfg["train"]["hold_weight"] == 3.0
+    assert cfg["save"]["name"] == "chiaroscuro-minimax-h3-uni-v5"
+    docs = (DOCS_ROOT / "minimax-h3-slider.md").read_text()
+    assert "--name chiaroscuro-minimax-h3-uni" in docs
+    assert "prompts-minimax-h3-chiaroscuro.yaml" in docs
+    assert "--rank 8 --alpha 8 --lr 1e-4 --steps 500" in docs
+    assert "--name chiaroscuro-minimax-h3-uni-r16" in docs
+    assert "--rank 16 --alpha 16 --lr 1e-4 --steps 1200" in docs
+    assert "--rank 16 --alpha 16 --lr 1e-4 --steps 1500" in docs
+    assert "--name chiaroscuro-minimax-h3-uni-v3" in docs
+    assert "--name chiaroscuro-minimax-h3-uni-v4" in docs
+    assert "--name chiaroscuro-minimax-h3-uni-v5" in docs
+    assert "--rank 16 --alpha 16 --lr 1e-4 --steps 2000" in docs
+    assert "--rank 16 --alpha 16 --lr 1e-4 --steps 2500" in docs
+    assert "--hold_mode non_concept" in docs
+    assert "--hold_weight 2.0" in docs
+    assert "--hold_weight 5.0" in docs
+    assert "--hold_weight 3.0" in docs
+    assert "slider-h3-chiaro-v3" in docs
+    assert "slider-h3-chiaro-v4" in docs
+    assert "slider-h3-chiaro-v5" in docs
+    assert "Rembrandt key light from the left" in docs
+    assert "hard single-source side light" in docs
+    assert "deep black shadows" in docs
+    assert "no fill" in docs
+    assert "identity leak" in docs
+    assert "v1/v2" in docs
+    assert "800" in docs and "1500" in docs
+    assert "escalate" in docs
+    assert "--short_side 768 --guidance 0" in docs
+    assert "FL2VA" in docs and "t2va" in docs
+    assert "MiniMaxAI/MiniMax-H3" in docs
+    assert "sampled frames" in docs or "sampled-frame" in docs
+    assert "sampled videos" in docs
+    assert "last-50" in docs
+    assert "B200" in docs and "B300" in docs
+    assert "--encoder_device cuda:1" in docs
+    assert "--load_h3_lora" in docs
+    assert "--steps 0" in docs
+    assert "--sample_scales 0,1" in docs
+    assert "--sample_duration 5" in docs
+    assert "--sample_fps 24" in docs
+    assert "2.13.0+cu130" in docs
+    assert "sm_103" in docs
+    assert "2.6+cu124" in docs
+    assert "zero-init" in docs
+    assert "slider-h3-chiaro-v1" in docs
+    assert "rank16 × 1500" in docs or "rank16 x 1500" in docs
+    assert "--lora_up_init_std 0.02" in docs
+    assert "Music 3" in docs
+    assert "plus-oracle" in docs or "plus caption at scale 0" in docs
+    assert "blue denim shirt" in docs
+    assert "white tee" in docs
+    assert "fruit bowl" in docs
+    assert "windsor chairs" in docs
+    assert "painted figures" in docs
+    assert "bearded scholars" in docs
+    assert "FAIL 1/3" in docs
+    assert "≥2/3" in docs or ">=2/3" in docs
+    assert "diag_minimax_h3_uni" in docs
+    assert "identity drift" in docs
+    assert "lighting gap" in docs
+    assert "--diag" in docs
+    assert "scale1_vs_scale0" in docs
+    assert "neu_lora_on_vs_off" in docs
+
+
+def test_train_step_non_concept_hold_copies_shared_subject():
+    """Train-step pack: shared subject rows become encode(neu); lighting stays plus."""
+    backend = MiniMaxH3Backend(device="cpu", dummy=True)
+    tokenizer = backend.tokenizer
+    pos = "male person sitting blue denim shirt, chiaroscuro dramatic"
+    neu = "male person sitting blue denim shirt, flat lighting"
+    plus_enc = backend.encode_text(pos, frozen=True)
+    neu_enc = backend.encode_text(neu, frozen=True)
+    # DummyEncoder mixes caption context, so the same word differs until hold.
+    person_plus = plus_enc.token_ids.index(tokenizer.encode("person")[0])
+    person_neu = neu_enc.token_ids.index(tokenizer.encode("person")[0])
+    assert not torch.allclose(
+        plus_enc.embeds[0, person_plus], neu_enc.embeds[0, person_neu]
+    )
+    concept = concept_token_ids(tokenizer, pos, neu)
+    unused = unused_token_ids(tokenizer, ["male", "female"])
+    hold_mask = unused_hold_mask(
+        plus_enc.token_ids, unused, concept, hold_mode=HOLD_MODE_NON_CONCEPT
+    )
+    packed = backend.pack_t2va(plus_enc, hold_neu=neu_enc, hold_mask=hold_mask)
+    held = packed.encoder_hidden_states[0]
+    neu_index = {int(tid): i for i, tid in enumerate(neu_enc.token_ids)}
+    plus_words = pos.split()
+    for i, tid in enumerate(plus_enc.token_ids):
+        word = plus_words[i] if i < len(plus_words) else ""
+        if int(tid) in concept:
+            assert torch.allclose(held[i], plus_enc.embeds[0, i]), word
+            assert not torch.allclose(held[i], neu_enc.embeds[0, 0]), word
+        else:
+            j = neu_index[int(tid)]
+            assert torch.allclose(held[i], neu_enc.embeds[0, j]), word
+
+
+def test_dummy_train_attributes_hold_mode_sidecar(tmp_path):
+    prompts = tmp_path / "one.yaml"
+    prompts.write_text(
+        "- target: person\n  positive: old person\n  neutral: person\n"
+        "  unconditional: ''\n  attributes: []\n"
+    )
+    args = parse_args([
+        "--dummy",
+        "--steps", "2",
+        "--name", "minimax-h3-attr-hold",
+        "--save_dir", str(tmp_path),
+        "--prompts_file", str(prompts),
+        "--hold_mode", "attributes",
+        "--no_sample",
+        "--seed", "0",
+    ])
+    sidecar = train(args)
+    assert sidecar["hold_mode"] == HOLD_MODE_ATTRIBUTES
+    assert sidecar["hold"] == "unused_attribute_tokens_to_encode_neu"
+
+
+def test_dummy_train_drops_uni_loss_and_writes_sidecar(tmp_path):
+    prompts = tmp_path / "one.yaml"
+    prompts.write_text(
+        "- target: person\n  positive: old person\n  neutral: person\n"
+        "  unconditional: ''\n  attributes: []\n"
+    )
+    args = parse_args([
+        "--dummy",
+        "--steps", "20",
+        "--name", "minimax-h3-dummy",
+        "--save_dir", str(tmp_path),
+        "--prompts_file", str(prompts),
+        "--lr", "0.5",
+        "--seed", "0",
+    ])
+    sidecar = train(args)
+    assert sidecar["model_id"] == "MiniMaxAI/MiniMax-H3"
+    assert sidecar["resolved_model_id"] == "MiniMaxAI/MiniMax-H3"
+    assert sidecar["variant"] == "FL2VA"
+    assert sidecar["workflow"] == "t2va"
+    assert sidecar["stack"] == "omni_transformer_flow"
+    assert sidecar["recipe"] == "minimax_h3_uni_velocity"
+    assert sidecar["minus_teacher"] is False
+    assert sidecar["minus_canary"] is True
+    assert sidecar["lora_only"] is True
+    assert sidecar["lora_host"] == "MiniMaxH3Attention"
+    assert sidecar["lora_linears"] == ["to_q", "to_k", "to_v", "to_out.0"]
+    assert sidecar["train_adaln"] is False
+    assert sidecar["velocity_teacher"] == "data_pointing"
+    assert sidecar["predict_v_faked"] is False
+    assert sidecar["cfg_distilled"] is True
+    assert sidecar["guidance"] == 0.0
+    assert sidecar["short_side"] == 768
+    assert sidecar["hold_concept_words"] is False
+    assert sidecar["hold_mode"] == HOLD_MODE_NON_CONCEPT
+    assert sidecar["hold"] == "non_concept_tokens_to_encode_neu"
+    assert sidecar["hold_weight"] == 1.0
+    assert sidecar["hosted_not_in_weights"] == ["H3-Context-IR", "H3-Regenerate-2K"]
+    assert sidecar["lora_up_init_std"] == 0.02
+    assert sidecar["first_loss"] > sidecar["last_loss"]
+    data = json.loads((tmp_path / "minimax-h3-dummy_last.json").read_text())
+    assert data["backend"] == "minimax_h3"
+
+
+def test_scale_zero_matches_neu_teacher():
+    backend = MiniMaxH3Backend(device="cpu", dummy=True)
+    neu = backend.encode_text("person")
+    packed = backend.pack_t2va(neu)
+    teacher = backend.forward_velocity(packed, scale=0.0)
+    student = backend.forward_velocity(packed, scale=0.0)
+    assert torch.allclose(teacher.sample, student.sample)
+    assert torch.allclose(teacher.audio_sample, student.audio_sample)
+
+
+def test_plus_and_neu_velocities_differ():
+    backend = MiniMaxH3Backend(device="cpu", dummy=True)
+    plus = backend.pack_t2va(backend.encode_text("old person"))
+    neu = backend.pack_t2va(
+        backend.encode_text("person"),
+        video_latents=plus.hidden_states,
+        audio_latents=plus.audio_hidden_states,
+    )
+    v_plus = backend.forward_velocity(plus, scale=0.0)
+    v_neu = backend.forward_velocity(neu, scale=0.0)
+    assert not torch.allclose(v_plus.sample, v_neu.sample)
+    pair = velocity_pair(v_plus.sample, v_plus.audio_sample)
+    assert pair.ndim == 2
+
+
+def test_config_points_at_minimax_h3():
+    cfg = yaml.safe_load((PACKAGE_ROOT / "data" / "config-minimax-h3.yaml").read_text())
+    assert cfg["pretrained_model"]["name_or_path"] == "MiniMaxAI/MiniMax-H3"
+    assert cfg["pretrained_model"]["variant"] == "FL2VA"
+    assert cfg["pretrained_model"]["workflow"] == "t2va"
+    assert cfg["train"]["recipe"] == "minimax_h3_uni_velocity"
+    assert cfg["train"]["guidance"] == 0
+    assert cfg["train"]["short_side"] == 768
+    assert cfg["network"]["target"] == "MiniMaxH3Attention"
+    assert cfg["network"]["train_adaln"] is False
+    assert cfg["network"]["lora_up_init_std"] == 0.02
+
+
+def test_live_load_is_not_imported_on_dummy():
+    import conceptmod.textsliders.minimax_h3_backend as h3
+
+    called = {"n": 0}
+
+    def boom(*_a, **_k):
+        called["n"] += 1
+        raise AssertionError("live MiniMax-H3 loader must not run in dummy mode")
+
+    orig = h3._load_minimax_h3_modular
+    h3._load_minimax_h3_modular = boom
+    try:
+        backend = MiniMaxH3Backend(device="cpu", dummy=True)
+        _ = backend.encode_text("person")
+        _ = backend.forward_velocity(backend.pack_t2va(backend.encode_text("person")), scale=1.0)
+        _ = backend.generate_t2va("person sitting in a chair", scale=0.0, seed=0)
+    finally:
+        h3._load_minimax_h3_modular = orig
+    assert called["n"] == 0
+
+
+def test_sample_geometry_defaults():
+    assert h3_num_frames(5.0, 24.0) == 124
+    # 4.5s * 24 = 108, which is above 107, so snap-up is 124.
+    assert h3_num_frames(4.5, 24.0) == 124
+    assert h3_num_frames(107 / 24.0, 24.0) == 107
+    height, width = h3_canvas_hw(768)
+    assert height == 768
+    assert width == 1344
+    tight_h, tight_w = h3_canvas_hw(544)
+    assert tight_h == 544
+    assert tight_w == 960
+
+
+def test_sample_prompts_are_unique_yaml_targets():
+    rows = load_slider_rows(
+        str(PACKAGE_ROOT / "data" / "prompts-minimax-h3-chiaroscuro.yaml"), ""
+    )
+    prompts = sample_prompts_from_rows(rows)
+    assert prompts == [
+        "person sitting in a chair wearing a blue denim shirt over a white tee",
+        "interior dining room with two wooden windsor chairs, a round wooden table, and a clear glass bowl of bananas apples and oranges",
+        "blue and white ceramic jar with painted bearded scholars in robes exchanging a gift on a wooden table",
+    ]
+    assert sample_prompts_from_rows(rows, max_rows=1) == [
+        "person sitting in a chair wearing a blue denim shirt over a white tee"
+    ]
+
+
+class _FakeMod:
+    def __init__(self) -> None:
+        self.device = None
+
+    def to(self, device):
+        self.device = str(device)
+        return self
+
+
+class _FakePipe:
+    def __init__(self) -> None:
+        self.transformer = _FakeMod()
+        self.vae = _FakeMod()
+        self.audio_vae = _FakeMod()
+        self.text_encoder = _FakeMod()
+        self.to_calls: list[str] = []
+
+    def to(self, device):
+        self.to_calls.append(str(device))
+        return self
+
+
+def test_place_pipeline_default_blankets_single_device():
+    pipe = _FakePipe()
+    place_minimax_h3_pipeline(pipe, device="cuda:0")
+    assert pipe.to_calls == ["cuda:0"]
+    place_minimax_h3_pipeline(pipe, device="cuda:0", encoder_device="cuda:0")
+    assert pipe.to_calls == ["cuda:0", "cuda:0"]
+    assert same_device("cuda", "cuda:0")
+
+
+def test_place_pipeline_encoder_device_skips_blanket_to():
+    pipe = _FakePipe()
+    place_minimax_h3_pipeline(pipe, device="cuda:0", encoder_device="cuda:1")
+    assert pipe.to_calls == []
+    assert pipe.transformer.device == "cuda:0"
+    assert pipe.vae.device == "cuda:0"
+    assert pipe.audio_vae.device == "cuda:0"
+    assert pipe.text_encoder.device == "cuda:1"
+
+
+def test_dummy_train_writes_t2va_samples(tmp_path):
+    prompts = tmp_path / "one.yaml"
+    prompts.write_text(
+        "- target: person sitting in a chair\n  positive: chiaroscuro person sitting in a chair\n"
+        "  neutral: person sitting in a chair\n  unconditional: ''\n  attributes: []\n"
+    )
+    args = parse_args([
+        "--dummy",
+        "--steps", "2",
+        "--name", "h3-sample",
+        "--save_dir", str(tmp_path),
+        "--prompts_file", str(prompts),
+        "--sample_scales", "0,1",
+        "--sample_duration", "5",
+        "--sample_fps", "24",
+        "--seed", "0",
+    ])
+    sidecar = train(args)
+    assert sidecar["guidance"] == 0.0
+    assert sidecar["sample_grid"]["guidance"] == 0.0
+    assert sidecar["sample_grid"]["scales"] == [0.0, 1.0]
+    assert sidecar["sample_grid"]["duration"] == 5.0
+    assert sidecar["sample_grid"]["fps"] == 24.0
+    samples = tmp_path / "samples"
+    meta = json.loads((samples / "final_meta.json").read_text())
+    assert meta["guidance"] == 0.0
+    assert meta["scales"] == [0.0, 1.0]
+    mp4s = sorted(samples.glob("*.mp4"))
+    assert [p.name for p in mp4s] == [
+        "final_person-sitting-in-a-chair_scale0.mp4",
+        "final_person-sitting-in-a-chair_scale1.mp4",
+    ]
+    for path in mp4s:
+        assert path.stat().st_size > 0
+        assert path.read_bytes()[:8].endswith(b"ftyp") or b"ftyp" in path.read_bytes()[:32]
+
+
+def test_load_h3_lora_roundtrip_and_steps_zero_sample(tmp_path):
+    prompts = tmp_path / "one.yaml"
+    prompts.write_text(
+        "- target: ceramic vase on a wooden table\n  positive: chiaroscuro ceramic vase on a wooden table\n"
+        "  neutral: ceramic vase on a wooden table\n  unconditional: ''\n  attributes: []\n"
+    )
+    train_dir = tmp_path / "trained"
+    args = parse_args([
+        "--dummy",
+        "--steps", "4",
+        "--name", "h3-load",
+        "--save_dir", str(train_dir),
+        "--prompts_file", str(prompts),
+        "--no_sample",
+        "--seed", "1",
+    ])
+    train(args)
+    lora_path = resolve_h3_lora_path(str(train_dir))
+    assert lora_path.name.endswith(".safetensors")
+    src = MiniMaxH3Backend(device="cpu", dummy=True)
+    src.load_trained(str(train_dir))
+    dst = MiniMaxH3Backend(device="cpu", dummy=True)
+    dst.load_trained(str(lora_path))
+    for a, b in zip(src.network.parameters(), dst.network.parameters()):
+        assert torch.allclose(a, b)
+
+    sample_dir = tmp_path / "reload"
+    reload_args = parse_args([
+        "--dummy",
+        "--steps", "0",
+        "--name", "h3-reload",
+        "--save_dir", str(sample_dir),
+        "--prompts_file", str(prompts),
+        "--load_h3_lora", str(train_dir),
+        "--sample_scales", "0,0.5,1",
+        "--encoder_device", "cuda:1",
+        "--device", "cuda:0",
+    ])
+    assert reload_args.steps == 0
+    assert reload_args.load_h3_lora == str(train_dir)
+    assert reload_args.encoder_device == "cuda:1"
+    sidecar = train(reload_args)
+    assert sidecar["steps"] == 0
+    assert sidecar["first_loss"] is None
+    assert sidecar["load_h3_lora"]
+    assert sidecar["encoder_device"] is None  # dummy stays CPU
+    assert sidecar["sample_grid"]["scales"] == [0.0, 0.5, 1.0]
+    mp4s = {p.name for p in (sample_dir / "samples").glob("*.mp4")}
+    assert mp4s == {
+        "final_ceramic-vase-on-a-wooden-table_scale0.mp4",
+        "final_ceramic-vase-on-a-wooden-table_scale0.5.mp4",
+        "final_ceramic-vase-on-a-wooden-table_scale1.mp4",
+    }
+
+
+def test_dummy_encoder_device_does_not_hit_hub():
+    import conceptmod.textsliders.minimax_h3_backend as h3
+
+    called = {"n": 0}
+
+    def boom(*_a, **_k):
+        called["n"] += 1
+        raise AssertionError("live MiniMax-H3 loader must not run in dummy mode")
+
+    orig = h3._load_minimax_h3_modular
+    h3._load_minimax_h3_modular = boom
+    try:
+        args = parse_args([
+            "--dummy",
+            "--encoder_device", "cuda:1",
+            "--device", "cuda:0",
+            "--steps", "0",
+            "--no_sample",
+        ])
+        backend = MiniMaxH3Backend(
+            device=args.device,
+            encoder_device=args.encoder_device,
+            dummy=True,
+        )
+        assert str(backend.device) == "cpu"
+        assert str(backend.encoder_device) == "cpu"
+        out = backend.generate_t2va("person", scale=1.0, seed=0)
+        assert out["guidance"] == 0.0
+        assert out["dummy"] is True
+    finally:
+        h3._load_minimax_h3_modular = orig
+    assert called["n"] == 0
+
+
+def test_load_h3_lora_rejects_non_h3_keys(tmp_path):
+    from safetensors.torch import save_file
+
+    path = tmp_path / "peft.safetensors"
+    save_file({"base_model.model.foo.weight": torch.zeros(2, 2)}, str(path))
+    backend = MiniMaxH3Backend(device="cpu", dummy=True)
+    with pytest.raises(ValueError, match="lora_h3"):
+        backend.load_trained(str(path))
+
+
+def _uni_velocity_gap(backend: MiniMaxH3Backend) -> float:
+    plus = backend.encode_text("old person")
+    packed = backend.pack_t2va(plus)
+    pred = backend.forward_velocity(packed, scale=1.0)
+    tgt = backend.forward_velocity(packed, scale=0.0)
+    video = torch.mean((pred.sample - tgt.sample) ** 2)
+    audio = torch.mean((pred.audio_sample - tgt.audio_sample) ** 2)
+    return float((video + audio).item())
+
+
+def test_zero_init_lora_up_is_uni_identity():
+    """Classic zeros: LoRA-on == LoRA-off, UNI gap ~ 0 (live rank8 death)."""
+    transformer = DummyOmniTransformer()
+    network = AttnLoRANetwork(transformer, rank=4, alpha=4.0, up_init_std=0.0)
+    assert network.up_init_std == 0.0
+    for lora in network.loras:
+        assert torch.count_nonzero(lora.lora_up.weight).item() == 0
+
+    backend = MiniMaxH3Backend(device="cpu", dummy=True, lora_up_init_std=0.0)
+    assert backend.lora_up_init_std == 0.0
+    assert _uni_velocity_gap(backend) < 1e-10
+
+
+def test_noisy_lora_up_gives_nonzero_uni_gap():
+    """N(0, 0.02) on LoRA-up breaks UNI identity so the adapter can train."""
+    torch.manual_seed(0)
+    transformer = DummyOmniTransformer()
+    network = AttnLoRANetwork(
+        transformer, rank=4, alpha=4.0, up_init_std=DEFAULT_LORA_UP_INIT_STD,
+    )
+    assert any(float(lora.lora_up.weight.detach().abs().max()) > 0 for lora in network.loras)
+
+    torch.manual_seed(0)
+    backend = MiniMaxH3Backend(
+        device="cpu", dummy=True, lora_up_init_std=DEFAULT_LORA_UP_INIT_STD,
+    )
+    gap = _uni_velocity_gap(backend)
+    assert gap > 1e-8
+
+
+def test_pack_dim_uses_proj_in_in_features():
+    """Live fake pack is proj_in.in_features (96), not in_channels (24)."""
+
+    class LiveLike(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.in_channels = 24
+            self.audio_in_channels = 32
+            self.video_dim = 4
+            self.audio_dim = 4
+            self.proj_in = torch.nn.Linear(96, 16)
+            self.audio_proj_in = torch.nn.Linear(64, 16)
+
+    live = LiveLike()
+    assert h3_pack_feature_dim(live, kind="video") == 96
+    assert h3_pack_feature_dim(live, kind="audio") == 64
+
+    backend = MiniMaxH3Backend(device="cpu", dummy=True)
+    dummy = backend.transformer
+    assert h3_pack_feature_dim(dummy, kind="video") == dummy.proj_in.in_features
+    packed = backend.pack_t2va(backend.encode_text("person"))
+    assert packed.hidden_states.shape[-1] == dummy.proj_in.in_features
+    assert packed.audio_hidden_states.shape[-1] == dummy.audio_proj_in.in_features
+
+    dummy.proj_in = torch.nn.Linear(96, dummy.hidden_size)
+    dummy.audio_proj_in = torch.nn.Linear(64, dummy.hidden_size)
+    live_pack = backend.pack_t2va(backend.encode_text("person"))
+    assert live_pack.hidden_states.shape[-1] == 96
+    assert live_pack.audio_hidden_states.shape[-1] == 64
+
+
+def test_lora_matches_host_bf16_dtype():
+    transformer = DummyOmniTransformer().to(dtype=torch.bfloat16)
+    network = AttnLoRANetwork(
+        transformer, rank=4, alpha=4.0, up_init_std=DEFAULT_LORA_UP_INIT_STD,
+    )
+    for lora in network.loras:
+        assert lora.lora_down.weight.dtype == torch.bfloat16
+        assert lora.lora_up.weight.dtype == torch.bfloat16
+    x = torch.randn(1, 2, transformer.hidden_size, dtype=torch.bfloat16)
+    out = transformer.transformer_blocks[0].attn(x)
+    assert out.dtype == torch.bfloat16
+
+
+def test_load_components_omits_workflow_kwarg(monkeypatch):
+    """Post-prune ModularPipeline.load_components rejects workflow=."""
+    import sys
+    import types
+
+    captured: dict = {}
+
+    class FakePipe:
+        def load_components(self, **kwargs):
+            captured["load"] = dict(kwargs)
+            if "workflow" in kwargs:
+                raise TypeError(
+                    "load_components() got an unexpected keyword argument 'workflow'"
+                )
+
+        def to(self, device):
+            captured["to"] = str(device)
+            return self
+
+    class FakeMP:
+        @staticmethod
+        def from_pretrained(model_id, workflow=None, **kwargs):
+            captured["from_pretrained"] = {
+                "model_id": model_id,
+                "workflow": workflow,
+                **kwargs,
+            }
+            return FakePipe()
+
+    fake = types.ModuleType("diffusers")
+    fake.ModularPipeline = FakeMP
+    monkeypatch.setitem(sys.modules, "diffusers", fake)
+
+    from conceptmod.textsliders.minimax_h3_backend import _load_minimax_h3_modular
+
+    pipe = _load_minimax_h3_modular(
+        "MiniMaxAI/MiniMax-H3", workflow="t2va", device="cpu",
+    )
+    assert isinstance(pipe, FakePipe)
+    assert captured["from_pretrained"]["workflow"] == "t2va"
+    assert "workflow" not in captured["load"]
+    assert captured["load"]["dtype"] == torch.bfloat16
+
+
+def test_cosine_l2_identity_and_gap():
+    same = torch.ones(2, 4)
+    metrics = cosine_l2(same, same)
+    assert set(metrics) == set(COS_L2_KEYS)
+    assert metrics["cos"] == pytest.approx(1.0)
+    assert metrics["l2"] == pytest.approx(0.0)
+    other = torch.zeros(2, 4)
+    gap = cosine_l2(same, other)
+    assert gap["l2"] > 0
+    pair = velocity_pair(torch.ones(1, 2, 3), torch.zeros(1, 2, 2))
+    assert pair.ndim == 2
+    assert set(cosine_l2(pair, pair)) == set(COS_L2_KEYS)
+
+
+def test_hold_effectiveness_and_energy_frac_shapes():
+    tok = DummyTokenizer()
+    pos, neu = "male old person", "male person"
+    plus_ids = tok.encode(pos)
+    neu_ids = tok.encode(neu)
+    concept = concept_token_ids(tok, pos, neu)
+    unused = unused_token_ids(tok, ["male"])
+    mask = unused_hold_mask(plus_ids, unused, concept, hold_mode=HOLD_MODE_NON_CONCEPT)
+    plus_h = torch.arange(len(plus_ids) * 3, dtype=torch.float32).reshape(len(plus_ids), 3)
+    neu_h = torch.stack([
+        torch.tensor([10.0, 11.0, 12.0]),
+        torch.tensor([20.0, 21.0, 22.0]),
+    ])
+    held = apply_unused_hold(plus_h, neu_h, plus_ids, neu_ids, mask)
+    hold = hold_effectiveness_metrics(
+        plus_h, neu_h, plus_ids, neu_ids, mask, concept_ids=concept, held_hidden=held,
+    )
+    assert hold["n_held"] >= 1
+    assert hold["n_concept"] >= 1
+    assert hold["held_max_abs"] == pytest.approx(0.0)
+    assert hold["held_mean_abs"] == pytest.approx(0.0)
+    assert hold["concept_mean_abs"] > 0
+    energy = embed_gap_energy_frac(
+        plus_h, neu_h, plus_ids, neu_ids, mask, concept_ids=concept, held_hidden=held,
+    )
+    assert energy["held_frac"] == pytest.approx(0.0)
+    assert energy["unheld_nonconcept_frac"] == pytest.approx(0.0)
+    assert energy["concept_frac"] == pytest.approx(1.0)
+    assert energy["concept"] > 0
+
+    attr_mask = unused_hold_mask(
+        plus_ids, unused, concept, hold_mode=HOLD_MODE_ATTRIBUTES,
+    )
+    attr_held = apply_unused_hold(plus_h, neu_h, plus_ids, neu_ids, attr_mask)
+    leak = embed_gap_energy_frac(
+        plus_h, neu_h, plus_ids, neu_ids, attr_mask,
+        concept_ids=concept, held_hidden=attr_held,
+    )
+    assert leak["unheld_nonconcept_frac"] > 0
+
+
+def _assert_diag_row(row: dict) -> None:
+    for key in DIAG_ROW_KEYS:
+        assert key in row, key
+    assert set(row["lighting_gap"]) == set(COS_L2_KEYS)
+    for key in COS_L2_KEYS:
+        assert isinstance(row["lighting_gap"][key], float)
+    energy = row["embed_gap_energy"]
+    for key in (
+        "concept", "held", "unheld_nonconcept",
+        "concept_frac", "held_frac", "unheld_nonconcept_frac",
+    ):
+        assert key in energy
+        assert isinstance(energy[key], float)
+    for key in ("held_max_abs", "held_mean_abs", "concept_mean_abs"):
+        assert key in row["hold"]
+        assert isinstance(row["hold"][key], float)
+    assert set(row["student"]) == set(STUDENT_KEYS)
+    for name in STUDENT_KEYS:
+        assert set(row["student"][name]) == set(COS_L2_KEYS)
+        for key in COS_L2_KEYS:
+            assert isinstance(row["student"][name][key], float)
+    assert isinstance(row["n_held"], int)
+    assert isinstance(row["n_free"], int)
+    assert isinstance(row["n_concept"], int)
+
+
+def test_dummy_diag_json_keys_and_hold(tmp_path):
+    args = parse_diag_args([
+        "--dummy",
+        "--name", "h3-diag",
+        "--save_dir", str(tmp_path),
+        "--prompts_file", str(PACKAGE_ROOT / "data" / "prompts-minimax-h3.yaml"),
+        "--seed", "0",
+    ])
+    summary = run_diag(args)
+    for key in (
+        "dummy", "model_id", "variant", "workflow", "hold_mode",
+        "load_h3_lora", "n_rows", "rows", "how_to_read", "aggregates",
+        "recipe",
+    ):
+        assert key in summary, key
+    assert summary["dummy"] is True
+    assert summary["model_id"] == "MiniMaxAI/MiniMax-H3"
+    assert summary["variant"] == "FL2VA"
+    assert summary["workflow"] == "t2va"
+    assert summary["hold_mode"] == HOLD_MODE_NON_CONCEPT
+    assert summary["recipe"] == "minimax_h3_uni_diag"
+    assert summary["load_h3_lora"] is None
+    assert summary["n_rows"] == len(summary["rows"]) > 0
+    assert set(HOW_TO_READ) <= set(summary["how_to_read"])
+    for row in summary["rows"]:
+        _assert_diag_row(row)
+        assert row["hold"]["held_max_abs"] == pytest.approx(0.0, abs=1e-5)
+        assert row["hold"]["held_mean_abs"] == pytest.approx(0.0, abs=1e-5)
+        assert row["hold"]["concept_mean_abs"] > 0
+        assert row["n_concept"] > 0
+        assert row["lighting_gap"]["l2"] > 0
+        assert row["student"]["scale0_vs_teacher_neu"]["cos"] == pytest.approx(1.0, abs=1e-5)
+        assert row["student"]["scale0_vs_teacher_neu"]["l2"] == pytest.approx(0.0, abs=1e-5)
+        assert row["embed_gap_energy"]["held_frac"] == pytest.approx(0.0, abs=1e-5)
+        assert row["embed_gap_energy"]["concept_frac"] == pytest.approx(1.0, abs=1e-5)
+    path = tmp_path / "h3-diag_diag.json"
+    assert path.is_file()
+    data = json.loads(path.read_text())
+    assert data["n_rows"] == summary["n_rows"]
+    table = format_diag_table(summary)
+    assert "light_cos" in table
+    assert "s1_s0" in table
+
+
+def test_dummy_diag_chiaro_and_attributes_leak(tmp_path):
+    backend = MiniMaxH3Backend(device="cpu", dummy=True)
+    rows = load_slider_rows(
+        str(PACKAGE_ROOT / "data" / "prompts-minimax-h3-chiaroscuro.yaml"), ""
+    )
+    row = diagnose_row(
+        backend, rows[0], hold_mode=HOLD_MODE_NON_CONCEPT, seed=0, index=0,
+    )
+    _assert_diag_row(row)
+    assert row["hold"]["held_max_abs"] == pytest.approx(0.0, abs=1e-5)
+    assert row["embed_gap_energy"]["unheld_nonconcept_frac"] == pytest.approx(0.0, abs=1e-5)
+    assert row["n_held"] > 0
+    assert row["n_concept"] > 0
+
+    leak = diagnose_row(
+        backend, rows[0], hold_mode=HOLD_MODE_ATTRIBUTES, seed=0, index=0,
+    )
+    _assert_diag_row(leak)
+    assert leak["embed_gap_energy"]["unheld_nonconcept_frac"] > 0
+
+    args = parse_diag_args([
+        "--dummy",
+        "--name", "h3-chiaro-diag",
+        "--save_dir", str(tmp_path),
+        "--prompts_file",
+        str(PACKAGE_ROOT / "data" / "prompts-minimax-h3-chiaroscuro.yaml"),
+        "--max_rows", "2",
+        "--seed", "1",
+    ])
+    summary = run_diag(args)
+    assert summary["n_rows"] == 2
+    for rec in summary["rows"]:
+        _assert_diag_row(rec)
+        assert rec["hold"]["concept_mean_abs"] > 0
+
+
+def test_dummy_diag_load_h3_lora_and_trainer_flag(tmp_path):
+    prompts = tmp_path / "one.yaml"
+    prompts.write_text(
+        "- target: person\n  positive: old person\n  neutral: person\n"
+        "  unconditional: ''\n  attributes: []\n"
+    )
+    train_dir = tmp_path / "trained"
+    train(parse_args([
+        "--dummy",
+        "--steps", "4",
+        "--name", "h3-diag-lora",
+        "--save_dir", str(train_dir),
+        "--prompts_file", str(prompts),
+        "--no_sample",
+        "--seed", "1",
+    ]))
+    diag_dir = tmp_path / "diag"
+    summary = run_diag(parse_diag_args([
+        "--dummy",
+        "--name", "h3-diag-reload",
+        "--save_dir", str(diag_dir),
+        "--prompts_file", str(prompts),
+        "--load_h3_lora", str(train_dir),
+        "--seed", "1",
+    ]))
+    assert summary["load_h3_lora"]
+    assert summary["n_rows"] == 1
+    _assert_diag_row(summary["rows"][0])
+    assert summary["rows"][0]["student"]["scale0_vs_teacher_neu"]["cos"] == pytest.approx(
+        1.0, abs=1e-5
+    )
+
+    via_train = train_main([
+        "--dummy",
+        "--diag",
+        "--name", "h3-diag-flag",
+        "--save_dir", str(tmp_path / "via-train"),
+        "--prompts_file", str(prompts),
+        "--seed", "2",
+    ])
+    assert via_train["recipe"] == "minimax_h3_uni_diag"
+    assert via_train["dummy"] is True
+    _assert_diag_row(via_train["rows"][0])
+    assert (tmp_path / "via-train" / "h3-diag-flag_diag.json").is_file()
+
+
+def test_dummy_diag_does_not_hit_hub():
+    import conceptmod.textsliders.minimax_h3_backend as h3
+
+    called = {"n": 0}
+
+    def boom(*_a, **_k):
+        called["n"] += 1
+        raise AssertionError("live MiniMax-H3 loader must not run in dummy diag")
+
+    orig = h3._load_minimax_h3_modular
+    h3._load_minimax_h3_modular = boom
+    try:
+        args = parse_diag_args([
+            "--dummy",
+            "--encoder_device", "cuda:1",
+            "--device", "cuda:0",
+            "--max_rows", "1",
+            "--save_dir", "/tmp/h3-diag-hub-guard",
+        ])
+        summary = run_diag(args)
+        assert summary["dummy"] is True
+        assert summary["device"] == "cpu"
+        assert summary["encoder_device"] is None
+    finally:
+        h3._load_minimax_h3_modular = orig
+    assert called["n"] == 0

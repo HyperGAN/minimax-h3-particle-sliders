@@ -1,0 +1,96 @@
+{
+  "schema": "pika-h3-flex-review-corrections-v1",
+  "reviewed_head": "d936cabd109d203deebb577655405990d5d72faa",
+  "date": "2026-10-31",
+  "scope": "Claude actual-source findings; scoped CPU/source fixes only",
+  "executed": {
+    "legacy_lane": {
+      "result": "95 passed in 4.86s",
+      "tests": [
+        "tests/test_pika_h3_flex.py",
+        "tests/test_minimax_h3_slider.py"
+      ],
+      "python": "3.11",
+      "torch": "2.11.0+cu128",
+      "peft": "0.20.0",
+      "device": "cpu"
+    },
+    "shared_lane": {
+      "result": "71 passed in 9.00s",
+      "tests": [
+        "tests/test_pika_h3_flex_session.py",
+        "tests/test_pika_h3_flex.py"
+      ],
+      "python": "3.12.15",
+      "torch": "2.14.1+cpu",
+      "peft": "0.21.2",
+      "core_revision": "4abc0eb03a4e3a84fc3e6d02734c13dc7e8ea231",
+      "particlegan": "0.9.4",
+      "hndl": "0.10.0",
+      "hypergan_revision": "5f368a3770cf5bdae0448995c9f76e29af8049f7",
+      "device": "cpu"
+    },
+    "limits": "Tiny/synthetic random native architecture, metadata fixtures and mocked local loader; not pretrained, GPU, media or quantized qualification. Suites overlap and their totals must not be summed.",
+    "diff_check": "passed",
+    "fixed_pika_check": "_check_fixed_pika AST identical to reviewed head; no caching or weakened checks",
+    "documentation_links": "Both Pika guides linked from root README and docs/README; local targets verified",
+    "model_weights_downloaded": false,
+    "gpu_jobs_started": false,
+    "driver_reprobed": false,
+    "qualified_run_skips": 0,
+    "optional_module_check": {
+      "environment": "original native env without shared installation",
+      "result": "1 module skipped in 0.04s; pytest exit5 (no collected tests)",
+      "reason": "shared H3 fixture requires particle_sliders package",
+      "not_counted_as_pass": true
+    }
+  },
+  "findings": {
+    "independent_close": "Injected checkpoint-close failure still removes all HNDL attention forwards; checkpoint handles remain retryable, then close succeeds idempotently.",
+    "constructor_unwind": "Injected post-build/post-guard failure restores original forward ownership, guards, modes and requires_grad flags; secondary cleanup failure preserves primary and retry handles.",
+    "primary_exception": "bind, prepare_native, HNDL slider/adapter construction retain primary exceptions and notes; nested failures retain every pending cleanup owner.",
+    "adapter_bytes": "SHA256 is checked on captured safetensors bytes and those tensors are loaded. A simulated disk replacement during component loading cannot change the payload; replacement before capture is refused.",
+    "temporal_geometry": "Native count/latent arithmetic reads RELEASE temporal_contract; 480p and 768p actual native packing match response widths 1398528 and 3593664. Identity and metadata expose frame counts/duration; existing warning tests remain.",
+    "documentation": "Historical core011/PG093 reference lane is distinguished from the optional core012/PG094/HG/HNDL lane; both native admissions refused. No GAN training claimed for standalone probe.",
+    "legacy_parity": "Exact original named_modules plain-Linear iteration and RNG initialization compared against current adapter state_dict and layer names, including reordered attention children.",
+    "checkpoint_atomicity": "Different model_identity and rehashed foreign PG profile are refused without changing checkpoint/game state, RNG, parameter identities, gradient buffer references/values/flags or PG thermal state.",
+    "speculative_performance": "No caching adopted; fixed Pika ownership/tamper checks remain unchanged on every scale-context entry."
+  },
+  "pr140_overlap": {
+    "url": "https://github.com/HyperGAN/particle-sliders/pull/140",
+    "base": "ed3e4a9a724aaaf9acc657be63f6d4556ebc45be",
+    "head": "0650d06c8d5fdeba314dc180041fec3d27fd86aa",
+    "inspected": [
+      "conceptmod/textsliders/minimax_h3_backend.py",
+      "docs/minimax-h3-slider.md"
+    ],
+    "resolution": "Exact overlapping diffs inspected. PR140 adds require_h3_cpu_fixture runtime closures and replaces historical UNI guide. Preserve main historical UNI behavior in PR149; no unrelated stacked branch/core/LTX merge. Parent retains later policy reconciliation.",
+    "source_sha256": {
+      "base-backend.txt": "b15e6192b0d60e5b160aff4970c26c51fe9a1e74697ca10d3135340fc361249a",
+      "head-guide.txt": "e80635cd98b9f57f94a9246fea364a7724826a7f18ebd33751023950a3dad8c1",
+      "head-backend.txt": "574581e7ca986824e1c88e06cdc7a9210b24dc4b7fe8149fdb3d57b94674425c",
+      "base-guide.txt": "51947277df344a3bb0790b4e02f1d7d343937e2beeaa9fd0e550b91aae763f47"
+    }
+  },
+  "remaining_gates": [
+    "Parent Claude/Ada exact-head review and merge routing",
+    "Separately owned core012 dependency/CI assembly",
+    "Official native wide continuous-vector admission refusal before loader",
+    "Native full-width memory/hardware, pretrained AV quality, quantized compatibility/training, six-step control, native-only v2 export and standard-LoRA interchange"
+  ],
+  "official_refusal": "ValueError: released PG09 cannot admit flat continuous vectors with width >=170",
+  "shared_core_files_modified": [],
+  "release_impact": "Opt-in conceptmod source/docs/tests; no entry point, core version, core package source or dependency change. No model publication or deployment.",
+  "original_reviewed_head": "3ef3d3092e9136bb66f01dad5b230ad6ecf1cc96",
+  "rereview_findings": {
+    "direct_bind": "Adapter construction moved inside bind try. Actual official width>=170 refusal directly through bind removes all HNDL forwards/registered parameters without relying on prepare_native.",
+    "idempotence_and_aggregation": "Projection close is idempotent; HNDL slider and checkpoint handle close retain every labeled failure. Legacy close retains failure objects and deduplicates notes.",
+    "closed_registration": "Successful close unregisters only the exact owned module identity. Failed owners remain registered for retry. Partial legacy construction test confirms zero remaining registrations/parameters and original forwards.",
+    "python_and_notes": "Core pyproject requires >=3.11. Standalone helper tolerates no callable add_note and deduplicates repeated notes. Compatibility simulated on3.11, not tested on3.10.",
+    "geometry_source": "Native prepare/render and session geometry read the same release canvases. Release geometry_provenance pins source functions/defaults, source digest, and model config for bias/audio/feature/canvas constants.",
+    "frame_identity": "Checkpoint identity-refusal parameterized for frozen-base hash and frame_metadata; both atomic. Prepared frame_metadata mismatch is separately rejected and cleans runtime before bind.",
+    "optional_dependencies": "Test module catches PackageNotFoundError and states absent package/metadata/wrong-version/Pika/PEFT skip reasons. Runtime missing metadata regression checks explicit diagnostic.",
+    "safetensors_metadata": "No header metadata is relied on: pinned bytes are decoded; release rank/alpha and actual fixed adapter scaling checks remain authoritative. Pretrained loading remains unqualified."
+  },
+  "dependency_lock": "Unchanged pika-h3-flex-session.json, exact core4abc0eb candidate; no in-progress reviewed core fixes adopted."
+}

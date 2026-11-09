@@ -1,0 +1,78 @@
+--- original/tests/test_minimax_h3_slider.py
++++ standalone/tests/test_minimax_h3_slider.py
+@@ -10,0 +11,5 @@
++
++from conceptmod.textsliders import minimax_h3_backend as installed_h3
++
++PACKAGE_ROOT = Path(installed_h3.__file__).resolve().parent
++DOCS_ROOT = Path(__file__).resolve().parents[1] / "docs"
+@@ -103 +108 @@
+-    root = Path("conceptmod/textsliders")
++    root = PACKAGE_ROOT
+@@ -113 +118 @@
+-        Path("docs/minimax-h3-slider.md"),
++        (DOCS_ROOT / "minimax-h3-slider.md"),
+@@ -314 +319 @@
+-    rows = load_slider_rows("conceptmod/textsliders/data/prompts-minimax-h3.yaml", "")
++    rows = load_slider_rows(str(PACKAGE_ROOT / "data" / "prompts-minimax-h3.yaml"), "")
+@@ -346 +351 @@
+-    path = Path("conceptmod/textsliders/data/prompts-minimax-h3-chiaroscuro.yaml")
++    path = (PACKAGE_ROOT / "data" / "prompts-minimax-h3-chiaroscuro.yaml")
+@@ -412 +417 @@
+-        "conceptmod/textsliders/data/prompts-minimax-h3-chiaroscuro.yaml", ""
++        str(PACKAGE_ROOT / "data" / "prompts-minimax-h3-chiaroscuro.yaml"), ""
+@@ -442 +447 @@
+-        Path("conceptmod/textsliders/data/config-minimax-h3-chiaroscuro.yaml").read_text()
++        (PACKAGE_ROOT / "data" / "config-minimax-h3-chiaroscuro.yaml").read_text()
+@@ -459 +464 @@
+-    docs = Path("docs/minimax-h3-slider.md").read_text()
++    docs = (DOCS_ROOT / "minimax-h3-slider.md").read_text()
+@@ -647,12 +651,0 @@
+-def test_music3_defaults_unchanged():
+-    tf_src = Path("conceptmod/textsliders/train_lora_music3.py").read_text()
+-    assert 'parser.add_argument("--steps", type=int, default=500)' in tf_src
+-    assert 'parser.add_argument("--rank", type=int, default=8)' in tf_src
+-    assert 'parser.add_argument("--lr", type=float, default=2e-3' in tf_src
+-    lm_src = Path("conceptmod/textsliders/train_lm_slider_music3.py").read_text()
+-    assert '"--lm_target"' in lm_src and 'default="v9"' in lm_src
+-    assert '"--pole_mode"' in lm_src and 'default="hidden"' in lm_src
+-    music3_yaml = Path("conceptmod/textsliders/data/prompts-music3.yaml").read_text()
+-    assert "MiniMax-H3" not in music3_yaml
+-
+-
+@@ -660 +653 @@
+-    cfg = yaml.safe_load(Path("conceptmod/textsliders/data/config-minimax-h3.yaml").read_text())
++    cfg = yaml.safe_load((PACKAGE_ROOT / "data" / "config-minimax-h3.yaml").read_text())
+@@ -708 +701 @@
+-        "conceptmod/textsliders/data/prompts-minimax-h3-chiaroscuro.yaml", ""
++        str(PACKAGE_ROOT / "data" / "prompts-minimax-h3-chiaroscuro.yaml"), ""
+@@ -1112 +1105 @@
+-        "--prompts_file", "conceptmod/textsliders/data/prompts-minimax-h3.yaml",
++        "--prompts_file", str(PACKAGE_ROOT / "data" / "prompts-minimax-h3.yaml"),
+@@ -1154 +1147 @@
+-        "conceptmod/textsliders/data/prompts-minimax-h3-chiaroscuro.yaml", ""
++        str(PACKAGE_ROOT / "data" / "prompts-minimax-h3-chiaroscuro.yaml"), ""
+@@ -1176 +1169 @@
+-        "conceptmod/textsliders/data/prompts-minimax-h3-chiaroscuro.yaml",
++        str(PACKAGE_ROOT / "data" / "prompts-minimax-h3-chiaroscuro.yaml"),
+--- original/tests/test_pika_h3_flex.py
++++ standalone/tests/test_pika_h3_flex.py
+@@ -460,7 +460,2 @@
+-    import importlib.util
+-    import sys
+-    path = Path(__file__).resolve().parents[1] / "packages/particle-sliders-core/src/particle_sliders/pg09_backends.py"
+-    spec = importlib.util.spec_from_file_location("h3_shared_scale_hazard_fixture", path)
+-    module = importlib.util.module_from_spec(spec)
+-    monkeypatch.setitem(sys.modules, spec.name, module)
+-    spec.loader.exec_module(module)
++    module = pytest.importorskip("particle_sliders.pg09_backends",
++                                 reason="generic scaling hazard requires the installed shared dependency")
+--- original/docs/minimax-h3-slider.md
++++ standalone/docs/minimax-h3-slider.md
+@@ -559,3 +559,3 @@
+-- [docs/README.md](README.md) — backend map and shared UNI pitfalls
+-- [docs/prompts.md](prompts.md) — `prompts-minimax-h3.yaml` / `prompts-minimax-h3-chiaroscuro.yaml`
+-- [docs/ltx25-slider.md](ltx25-slider.md) — embed-match UNI (student +1 on neu)
++- [docs/README.md](https://github.com/HyperGAN/particle-sliders/blob/fae34ef80f8ad0fbe02e5d9abc3c0e770798d5f7/docs/README.md) — backend map and shared UNI pitfalls
++- [docs/prompts.md](https://github.com/HyperGAN/particle-sliders/blob/fae34ef80f8ad0fbe02e5d9abc3c0e770798d5f7/docs/prompts.md) — `prompts-minimax-h3.yaml` / `prompts-minimax-h3-chiaroscuro.yaml`
++- [docs/ltx25-slider.md](https://github.com/HyperGAN/particle-sliders/blob/fae34ef80f8ad0fbe02e5d9abc3c0e770798d5f7/docs/ltx25-slider.md) — embed-match UNI (student +1 on neu)

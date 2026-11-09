@@ -1,0 +1,92 @@
+{
+  "schema": "pika-h3-flex-shared-software-qualification-v1",
+  "preserved_native_commit": "3e252a9b18197cbd79a943b47db37b3fea0a385d",
+  "shared_cohort": {
+    "core_revision": "4abc0eb03a4e3a84fc3e6d02734c13dc7e8ea231",
+    "core_version": "0.12.0",
+    "particlegan": "0.9.4",
+    "hypergan_revision": "5f368a3770cf5bdae0448995c9f76e29af8049f7",
+    "hndl": "0.10.0",
+    "core_sources": {
+      "__init__.py": "840ac3d54df90b121c7d2a13c5097c6132ba19ec3c95f5673251dd709935f799",
+      "pg09.py": "e580a9339630bea7cf3aa82e34c2d08a3e231b8df0aa408b29baa08b8de01671",
+      "response.py": "284f4a4fc98f5590ce1d2066810f79021cb3df12828ef1399a98cf78746d0597",
+      "lifecycle.py": "cc94be191c5810f79642349c9258c466553c41e509df2e28622bfac82bc802c0",
+      "pg09_backends.py": "2301cd70b2b0f99f64821ae378f0926a3b23e3695a33e38b54a4406697b201c9",
+      "fibo_hndl.py": "ff170b5ca321b6eac1db10f6f82b79abc60fd983409f9c8ada7513101de9b6a4",
+      "fibo_hndl_010_sources.json": "69e65e3daf18ac5c99154fd735d0b6fc8e8c95433c5b0618a074cdd203ed6251",
+      "optimizer_policy.py": "9ae5fd84987d9a2ae4c202801a9f24b2fe4cebc6d0c8bdc737341a895a79b9a9"
+    },
+    "qualification": "Exact reviewed software candidate; no qualified native wide continuous H3 or pretrained/quantized/media execution. Dependency publication is parent-owned."
+  },
+  "executed": {
+    "shared_lane": "51 passed in 7.20s: 7 shared/HG/HNDL cases plus 44 preserved Pika cases",
+    "legacy_lane": "88 passed in 4.66s: preserved Pika plus legacy H3 cases",
+    "shared_runtime": {
+      "python": "3.12.15",
+      "torch": "2.14.1+cpu",
+      "peft": "0.21.2",
+      "transformers": "5.22.1",
+      "diffusers_source": "d0b9b1b5a540e5f9df2f8ec236347bf9c5aa7d1f",
+      "particlegan": "0.9.4",
+      "hndl": "0.10.0",
+      "hypergan": "5f368a3770cf5bdae0448995c9f76e29af8049f7"
+    },
+    "tests": [
+      "native full-width admission refusal before the loader",
+      "HNDL LoRA values and input-gradient parity",
+      "bfloat16 frozen native host and float32 HNDL leaf gradients",
+      "actual shared PG updates of HNDL leaves/critic with frozen base+Pika",
+      "scale-captured recomputation",
+      "exact checkpoint/resume with and without shared checkpointing",
+      "shared raw export/reload and observation isolation",
+      "changed-cohort refusal"
+    ],
+    "fixture": "random miniature native-H3 architecture, 6-coordinate response; not released H3 geometry, weights or quality",
+    "model_weights_downloaded": false,
+    "gpu_jobs_started": false,
+    "driver_reprobed": false
+  },
+  "production_admission": {
+    "native_shape": [
+      1,
+      1398528
+    ],
+    "source_profile": "release-0.9.4",
+    "penalty_input_domain": "auto",
+    "outcome": "refused before loader",
+    "error": "ValueError: released PG09 cannot admit flat continuous vectors with width >=170",
+    "bypass": false
+  },
+  "networks": {
+    "projection": "HyperGAN verified builder executes H3-specific HNDL linear/down-up graph",
+    "critic": "HyperGAN verified builder executes H3-specific HNDL conditional raw-logit graph",
+    "arm": "adapter_gan",
+    "particles": null,
+    "fixed_pika_scale": 1.0,
+    "custom_context": "Owns non-PEFT HNDL wrapper multipliers; shared PEFT-name selection does not address these leaves"
+  },
+  "graph_sha256": {
+    "pika-h3-flex-slider.hndl": "e32094eb55b9178e8c42d7bf483a5915593d5fe6ae3cbca7478559cf80f8dc4c",
+    "pika-h3-flex-critic.hndl": "db58a4e586cb5521eef362f0302f9821eeb646fcc5c1fcc04762b97996ed3764"
+  },
+  "overlap": {
+    "existing_pr": "https://github.com/HyperGAN/particle-sliders/pull/140",
+    "paths": [
+      "conceptmod/textsliders/minimax_h3_backend.py",
+      "docs/minimax-h3-slider.md"
+    ],
+    "action": "No audit branches or core payload merged; parent must reconcile before any merge"
+  },
+  "remaining_gaps": [
+    "reviewed core candidate publication/CI assembly",
+    "reviewed explicit upstream continuous-domain capability and subsequent core adoption",
+    "native full-width HNDL critic/optimizer memory and hardware fit",
+    "pretrained loading and paired-response/model-quality qualification",
+    "six-step audiovisual control/decoding",
+    "quantized compatibility/training",
+    "native-only v2 export and standard-LoRA interchange"
+  ],
+  "shared_core_files_modified": [],
+  "readiness": "focused draft only; no merge, model publication or deployment"
+}

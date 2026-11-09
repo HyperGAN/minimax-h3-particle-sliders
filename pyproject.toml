@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=84.2.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "minimax-h3-particle-sliders"
+version = "0.1.0.dev0"
+description = "MiniMax-H3 legacy sliders and guarded Pika H3 Flex shared-session candidate"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = ["torch>=2.6,<3", "safetensors>=0.4,<1", "PyYAML>=6,<7"]
+
+[project.optional-dependencies]
+native = [
+  "diffusers @ git+https://github.com/huggingface/diffusers.git@d0b9b1b5a540e5f9df2f8ec236347bf9c5aa7d1f",
+  "transformers>=5.15,<6", "peft>=0.20,<0.22", "accelerate>=1,<2",
+]
+shared = [
+  "particle-sliders-core @ git+https://github.com/HyperGAN/particle-sliders.git@a794e3b4a8813b012f2c4faa3da82b78d4a90214#subdirectory=packages/particle-sliders-core",
+  "particlegan==0.9.4", "hndl==0.10.0",
+  "hypergan @ git+https://github.com/HyperGAN/HyperGAN.git@5f368a3770cf5bdae0448995c9f76e29af8049f7",
+]
+test = ["pytest>=8"]
+
+[project.scripts]
+h3-flex = "conceptmod.textsliders.pika_h3_flex:main"
+h3-legacy-uni = "conceptmod.textsliders.h3_cli:legacy_uni"
+h3-legacy-diag = "conceptmod.textsliders.h3_cli:legacy_diag"
+
+[project.urls]
+Repository = "https://github.com/HyperGAN/minimax-h3-particle-sliders"
+Source = "https://github.com/HyperGAN/particle-sliders/tree/fae34ef80f8ad0fbe02e5d9abc3c0e770798d5f7"
+
+[tool.setuptools]
+packages = ["conceptmod", "conceptmod.textsliders"]
+include-package-data = false
+
+[tool.setuptools.package-data]
+"conceptmod.textsliders" = [
+  "data/config-minimax-h3.yaml", "data/config-minimax-h3-chiaroscuro.yaml",
+  "data/prompts-minimax-h3.yaml", "data/prompts-minimax-h3-chiaroscuro.yaml",
+  "data/pika-h3-flex-release.json", "data/pika-h3-flex-session.json",
+  "data/pika-h3-flex-slider.hndl", "data/pika-h3-flex-critic.hndl",
+  "data/h3-extraction.json",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"

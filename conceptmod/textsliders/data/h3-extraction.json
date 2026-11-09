@@ -1,0 +1,312 @@
+{
+  "schema": "minimax-h3-clean-extraction-v1",
+  "source_repository": "https://github.com/HyperGAN/particle-sliders",
+  "source_commit": "fae34ef80f8ad0fbe02e5d9abc3c0e770798d5f7",
+  "target_repository": "HyperGAN/minimax-h3-particle-sliders",
+  "method": "Explicit allowlist clean export; no umbrella history graft",
+  "sources": [
+    {
+      "source_path": "LICENSE",
+      "destination_path": "LICENSE",
+      "git_blob_sha1": "b2a2dca14d1a01ad6ad590db2486e0c3af5a32e5",
+      "sha256": "2b61d4a8dd7a958b99133a92e92eede6f5e8b0f7b44d234665f822051e530685",
+      "source_bytes": 1072,
+      "extracted_sha256": "2b61d4a8dd7a958b99133a92e92eede6f5e8b0f7b44d234665f822051e530685",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "conceptmod/__init__.py",
+      "destination_path": "conceptmod/__init__.py",
+      "git_blob_sha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_bytes": 0,
+      "extracted_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "conceptmod/textsliders/__init__.py",
+      "destination_path": "conceptmod/textsliders/__init__.py",
+      "git_blob_sha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_bytes": 0,
+      "extracted_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "conceptmod/textsliders/minimax_h3_backend.py",
+      "destination_path": "conceptmod/textsliders/minimax_h3_backend.py",
+      "git_blob_sha1": "bd47286203d037d14c7d9f787da4009126f18234",
+      "sha256": "16aec7c6ff8e0fbdb18dbc214349959ee2f8399bfbb80a5aa5cbe8113d2aa703",
+      "source_bytes": 36937,
+      "extracted_sha256": "16aec7c6ff8e0fbdb18dbc214349959ee2f8399bfbb80a5aa5cbe8113d2aa703",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "conceptmod/textsliders/minimax_h3_uni.py",
+      "destination_path": "conceptmod/textsliders/minimax_h3_uni.py",
+      "git_blob_sha1": "f99e67d951d48c0338e857b4b0b9edadce65f4fa",
+      "sha256": "fd63821a82444243e275ac99a600ad9d642fa38606761201592b6266c22fac8f",
+      "source_bytes": 13030,
+      "extracted_sha256": "fd63821a82444243e275ac99a600ad9d642fa38606761201592b6266c22fac8f",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "conceptmod/textsliders/train_lora_minimax_h3.py",
+      "destination_path": "conceptmod/textsliders/train_lora_minimax_h3.py",
+      "git_blob_sha1": "9750ebacb1776b727d2538660d0d67e68e8c3d04",
+      "sha256": "f4fc488639604daf58c4b9819df66b80e1803b45e5386d0a12d86f2df8752c91",
+      "source_bytes": 22131,
+      "extracted_sha256": "f4fc488639604daf58c4b9819df66b80e1803b45e5386d0a12d86f2df8752c91",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "conceptmod/textsliders/diag_minimax_h3_uni.py",
+      "destination_path": "conceptmod/textsliders/diag_minimax_h3_uni.py",
+      "git_blob_sha1": "984ab82be8ccc60a8cdf2df660356388241ab031",
+      "sha256": "f1e534033d25a67d3476499cace3f785168e40fd80a05195a3fe54c63996df18",
+      "source_bytes": 15816,
+      "extracted_sha256": "f1e534033d25a67d3476499cace3f785168e40fd80a05195a3fe54c63996df18",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "conceptmod/textsliders/pika_h3_flex.py",
+      "destination_path": "conceptmod/textsliders/pika_h3_flex.py",
+      "git_blob_sha1": "bae3e7d6b11431b077651febb8c27ae5c8eadd06",
+      "sha256": "facb985a78818a5d9b768322b327e53a324c213b18ecb47ee3ec4dfda36dc104",
+      "source_bytes": 26260,
+      "extracted_sha256": "facb985a78818a5d9b768322b327e53a324c213b18ecb47ee3ec4dfda36dc104",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "conceptmod/textsliders/pika_h3_flex_session.py",
+      "destination_path": "conceptmod/textsliders/pika_h3_flex_session.py",
+      "git_blob_sha1": "fdaa4c07b434cc328cb46568166e3e6c19e7ad9c",
+      "sha256": "2c72a04f27a0562dfd97d563bde7b7bb81cd30ab2b7428f225c8e9e605f7e544",
+      "source_bytes": 19242,
+      "extracted_sha256": "2c72a04f27a0562dfd97d563bde7b7bb81cd30ab2b7428f225c8e9e605f7e544",
+      "transformation": "none; byte-identical",
+      "current_sha256": "87e3fad9352f160c14e8ca8cf25fc5eef8a08c608e8e2b6306cd35414fa1aa51",
+      "current_transformation": "Deliberate modern shared cohort a794: complete core-source admission guard and exact source lock; original extraction hashes retained."
+    },
+    {
+      "source_path": "conceptmod/textsliders/data/config-minimax-h3.yaml",
+      "destination_path": "conceptmod/textsliders/data/config-minimax-h3.yaml",
+      "git_blob_sha1": "d2e076ef4fe5a166d3b602c3b24d686badae0f4f",
+      "sha256": "58f75b2748bbddb4e54a6ceacc7b55ec7626eefee0aba69d1b15f9f57d966cd6",
+      "source_bytes": 852,
+      "extracted_sha256": "58f75b2748bbddb4e54a6ceacc7b55ec7626eefee0aba69d1b15f9f57d966cd6",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "conceptmod/textsliders/data/config-minimax-h3-chiaroscuro.yaml",
+      "destination_path": "conceptmod/textsliders/data/config-minimax-h3-chiaroscuro.yaml",
+      "git_blob_sha1": "a380f5e01b7e0ebca69950b25965c441142e0872",
+      "sha256": "4a61295dfb881ba90ae9a7de3762a779fe053ed17ce9a515d47859cb583e7e90",
+      "source_bytes": 922,
+      "extracted_sha256": "4a61295dfb881ba90ae9a7de3762a779fe053ed17ce9a515d47859cb583e7e90",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "conceptmod/textsliders/data/prompts-minimax-h3.yaml",
+      "destination_path": "conceptmod/textsliders/data/prompts-minimax-h3.yaml",
+      "git_blob_sha1": "e16763c877e98aed699909719c69bec6f8b9ec03",
+      "sha256": "05fe2ebee11873c3df00683fc0705c6064d9fbdab254bd0ac5f422cf9f5b7d4b",
+      "source_bytes": 306,
+      "extracted_sha256": "05fe2ebee11873c3df00683fc0705c6064d9fbdab254bd0ac5f422cf9f5b7d4b",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "conceptmod/textsliders/data/prompts-minimax-h3-chiaroscuro.yaml",
+      "destination_path": "conceptmod/textsliders/data/prompts-minimax-h3-chiaroscuro.yaml",
+      "git_blob_sha1": "3fef7b91d58d9c79d623b3e7e76f101c3f595e5b",
+      "sha256": "0ce05b8da49c94984b8f3266223229b9f9baccf19ac77269f1e73c24dafa4d80",
+      "source_bytes": 4112,
+      "extracted_sha256": "0ce05b8da49c94984b8f3266223229b9f9baccf19ac77269f1e73c24dafa4d80",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "conceptmod/textsliders/data/pika-h3-flex-release.json",
+      "destination_path": "conceptmod/textsliders/data/pika-h3-flex-release.json",
+      "git_blob_sha1": "01f0d86d530ba6901ae925bc9d21e02ef8b5b690",
+      "sha256": "969dbd7cd7ec4550c571bf027eefad0f73b714a24df74ede6ce13ed586d95fe9",
+      "source_bytes": 16073,
+      "extracted_sha256": "969dbd7cd7ec4550c571bf027eefad0f73b714a24df74ede6ce13ed586d95fe9",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "conceptmod/textsliders/data/pika-h3-flex-session.json",
+      "destination_path": "conceptmod/textsliders/data/pika-h3-flex-session.json",
+      "git_blob_sha1": "8118fd811f59b421a471380a4bb63676c3de7f80",
+      "sha256": "e0478ae33cd6f901e899017589419e8c54fe498ceeead2807f825c24264dca5a",
+      "source_bytes": 1130,
+      "extracted_sha256": "e0478ae33cd6f901e899017589419e8c54fe498ceeead2807f825c24264dca5a",
+      "transformation": "none; byte-identical",
+      "current_sha256": "7b5b793ec8e6f41b072e279565b54f01826486b862c523fd70f95f64dde18ba8",
+      "current_transformation": "Deliberate modern shared cohort a794: complete core-source admission guard and exact source lock; original extraction hashes retained."
+    },
+    {
+      "source_path": "conceptmod/textsliders/data/pika-h3-flex-slider.hndl",
+      "destination_path": "conceptmod/textsliders/data/pika-h3-flex-slider.hndl",
+      "git_blob_sha1": "6058ae6f7da2dd15080b9300afcb4687c44c9027",
+      "sha256": "e32094eb55b9178e8c42d7bf483a5915593d5fe6ae3cbca7478559cf80f8dc4c",
+      "source_bytes": 112,
+      "extracted_sha256": "e32094eb55b9178e8c42d7bf483a5915593d5fe6ae3cbca7478559cf80f8dc4c",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "conceptmod/textsliders/data/pika-h3-flex-critic.hndl",
+      "destination_path": "conceptmod/textsliders/data/pika-h3-flex-critic.hndl",
+      "git_blob_sha1": "5c63629e2d464f2c8b0dfff980e0160176a88781",
+      "sha256": "db58a4e586cb5521eef362f0302f9821eeb646fcc5c1fcc04762b97996ed3764",
+      "source_bytes": 182,
+      "extracted_sha256": "db58a4e586cb5521eef362f0302f9821eeb646fcc5c1fcc04762b97996ed3764",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "tests/test_minimax_h3_slider.py",
+      "destination_path": "tests/test_minimax_h3_slider.py",
+      "git_blob_sha1": "1a4ccea2cea9fe8ef3879bc90a3982e56748397d",
+      "sha256": "23dbcace35ab5bb7b19587bce6e19e118d6e34a804cebfad680ff8f5a418197b",
+      "source_bytes": 48424,
+      "extracted_sha256": "5841945a67a0aabff98e3a2ae747e9fd247ba8d1559f12b279b75abb5683b73f",
+      "transformation": "Installed-resource paths; omit the unrelated Music3-defaults test."
+    },
+    {
+      "source_path": "tests/test_pika_h3_flex.py",
+      "destination_path": "tests/test_pika_h3_flex.py",
+      "git_blob_sha1": "fe030e8b626e3eeb7bd701529d0706e860ebfb40",
+      "sha256": "6f91c710496571e61f94abf8e554a0f361927657da3fee63c2737e712ea9be90",
+      "source_bytes": 28837,
+      "extracted_sha256": "355a75b8b14703675571709747d07236ba944479471666e35dbf1df4156c4a77",
+      "transformation": "Import installed shared helper instead of umbrella file path."
+    },
+    {
+      "source_path": "tests/test_pika_h3_flex_session.py",
+      "destination_path": "tests/test_pika_h3_flex_session.py",
+      "git_blob_sha1": "519df99815673364252a893ce668660e7232bee1",
+      "sha256": "f99154415f6d17ae428e14f7f45ce31646587ca93af2cf6726b142a15ea6e860",
+      "source_bytes": 20189,
+      "extracted_sha256": "f99154415f6d17ae428e14f7f45ce31646587ca93af2cf6726b142a15ea6e860",
+      "transformation": "none; byte-identical fixture factory source retained for cohort compatibility"
+    },
+    {
+      "source_path": "docs/minimax-h3-slider.md",
+      "destination_path": "docs/minimax-h3-slider.md",
+      "git_blob_sha1": "fcd516e10c94ce44ca3c2f85dc7591acb3d70362",
+      "sha256": "9647e26d0d059e911e6a30e50c9a8fa236a8b500be082cd522c403699646f358",
+      "source_bytes": 26557,
+      "extracted_sha256": "094b92e5b0dca5578c6d27c20a2201459f08b328710a494db1628be090f9ed1b",
+      "transformation": "Redirect three historical cross-model links to immutable original URLs.",
+      "current_sha256": "094b92e5b0dca5578c6d27c20a2201459f08b328710a494db1628be090f9ed1b",
+      "publication_transformation": "Generalize historical workstation source paths; retain original source/blob/hash identity."
+    },
+    {
+      "source_path": "docs/pika-h3-flex.md",
+      "destination_path": "docs/pika-h3-flex.md",
+      "git_blob_sha1": "fcd7d4a9bb959ca97dc4ec76c5766309669c4ecb",
+      "sha256": "749d03a7555e6cb3a6af2ec2dd676b257ec825032aa98c4983fdb558cba6e8eb",
+      "source_bytes": 14264,
+      "extracted_sha256": "749d03a7555e6cb3a6af2ec2dd676b257ec825032aa98c4983fdb558cba6e8eb",
+      "transformation": "none; byte-identical",
+      "current_sha256": "78dd26ef5487bd7ee939ced6557b83af3fc205e0c9c1c113506bbc2b8d924462",
+      "publication_transformation": "Generalize historical workstation source paths; retain original source/blob/hash identity."
+    },
+    {
+      "source_path": "docs/pika-h3-flex-shared-session.md",
+      "destination_path": "docs/pika-h3-flex-shared-session.md",
+      "git_blob_sha1": "7198acc762171ad474cba5dd7d8b9cf9fcd0ae20",
+      "sha256": "232a83e61afba2b9bf3ba99a2c7c5432bf820cb65dac47a43645cde161a68f26",
+      "source_bytes": 10760,
+      "extracted_sha256": "232a83e61afba2b9bf3ba99a2c7c5432bf820cb65dac47a43645cde161a68f26",
+      "transformation": "none; byte-identical",
+      "current_sha256": "51bbbd32fa05caf61bab112189cfff61f16d2679eafea9e6a7597093e2b54848",
+      "current_transformation": "Lane-scoped documentation of deliberate a794 source cohort; original source/extraction hashes retained."
+    },
+    {
+      "source_path": "docs/pika-h3-flex-shared-session-qualification.json",
+      "destination_path": "docs/pika-h3-flex-shared-session-qualification.json",
+      "git_blob_sha1": "c8a23fc65a757a9e7835789b9110e4f5d6e7fa75",
+      "sha256": "8dc64197764491cd767b5509369d571357c270c6a218737364ce16482c3282c7",
+      "source_bytes": 4384,
+      "extracted_sha256": "8dc64197764491cd767b5509369d571357c270c6a218737364ce16482c3282c7",
+      "transformation": "none; byte-identical"
+    },
+    {
+      "source_path": "docs/pika-h3-flex-review-corrections.json",
+      "destination_path": "docs/pika-h3-flex-review-corrections.json",
+      "git_blob_sha1": "86c1a4e28c4fc98de13d012289f8aeac5465a205",
+      "sha256": "8970720b828f4c1ee5aca5a346dbe1e42f29e2ed56facfba75af38996c9f6855",
+      "source_bytes": 7317,
+      "extracted_sha256": "8970720b828f4c1ee5aca5a346dbe1e42f29e2ed56facfba75af38996c9f6855",
+      "transformation": "none; byte-identical"
+    }
+  ],
+  "runtime_policy": "Phase1 original runtime/data hashes retained. Subsequent modern candidate-only source cohort update recorded explicitly; legacy UNI and default native/model/geometry behavior unchanged. Shared dependency remains installed, not copied.",
+  "exclusions": [
+    "umbrella shared core and other model products",
+    "credentials/private evidence",
+    "weights and generated run outputs",
+    "vendor environments and dependency source trees",
+    ".git history and deployment/release configuration"
+  ],
+  "generated_files": [
+    {
+      "path": "pyproject.toml",
+      "purpose": "H3-only package/dependency/resource and console metadata"
+    },
+    {
+      "path": ".gitignore",
+      "purpose": "Exclude local caches/builds/models"
+    },
+    {
+      "path": "README.md",
+      "purpose": "Standalone product guide and limitations"
+    },
+    {
+      "path": "MANIFEST.in",
+      "purpose": "Explicit source distribution allowlist"
+    },
+    {
+      "path": "conceptmod/textsliders/h3_cli.py",
+      "purpose": "Legacy console wrappers"
+    },
+    {
+      "path": "conceptmod/textsliders/data/h3-extraction.json",
+      "purpose": "Original source/path/blob provenance and extraction mapping"
+    },
+    {
+      "path": "docs/extraction.md",
+      "purpose": "Content boundary and installed-artifact validation plan"
+    },
+    {
+      "path": "docs/extraction-adaptations.diff",
+      "purpose": "Literal original-to-extracted test/documentation changes"
+    },
+    {
+      "path": "tests/test_distribution.py",
+      "purpose": "Installed resources/runtime hashes and entrypoint boundary checks"
+    },
+    {
+      "path": "tools/verify_original_cohort.py",
+      "purpose": "Cross-install random-fixture raw/EMA/resume compatibility checks"
+    },
+    {
+      "path": "tests/test_core_a794.py",
+      "purpose": "Bounded full-source and H3 consumer lifecycle/OFF/raw/EMA/cleanup regressions for exact reviewed core"
+    }
+  ],
+  "post_extraction_cohort_updates": [
+    {
+      "previous_product_commit": "7224a55378b0339e7bb511bbc5981032788edfb1",
+      "previous_core_revision": "4abc0eb03a4e3a84fc3e6d02734c13dc7e8ea231",
+      "core_revision": "a794e3b4a8813b012f2c4faa3da82b78d4a90214",
+      "affected_runtime_resources": [
+        "conceptmod/textsliders/pika_h3_flex_session.py",
+        "conceptmod/textsliders/data/pika-h3-flex-session.json"
+      ],
+      "old_artifact_policy": "Reject old raw/EMA/resume packets, no implicit rebinding",
+      "historical_uni_and_default_native": "unchanged",
+      "reason": "Coordinator-authorized reviewed core adoption; fullsource closure and H3 consumer CPU tests, not native qualification"
+    }
+  ]
+}
