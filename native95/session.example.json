@@ -1,0 +1,27 @@
+{
+  "backend": "minimax_h3_phase_owned_av95",
+  "cohort": "choose-a-genuinely-new-H3-phase095-cohort",
+  "options": {
+    "snapshot": "/path/to/complete-original-snapshot",
+    "conditioning": "/path/to/completed-conditioning.pt",
+    "conditioning_sha256": "REPLACE_WITH_GENUINE_COMPLETED_CONDITIONING_SHA256",
+    "cache": "/path/to/completed-matching-native-paired-cache.pt",
+    "cache_sha256": "REPLACE_WITH_GENUINE_COMPLETED_CACHE_SHA256",
+    "device": "cuda:0",
+    "base_precision": "bfloat16",
+    "duration": 5,
+    "resolution": "480p",
+    "steps": 128,
+    "batch": 2,
+    "seed": 7,
+    "ema_decay": null,
+    "pg_version": "0.9.5",
+    "pg_source_profile": "release-0.9.5",
+    "penalty_input_domain": "continuous",
+    "source_profile": "h3-native-allCUDA-DiT24-26-refiner1-1-PG0-group5-sync-unwind-FF512-v3",
+    "initialization_policy": "h3-kaiming-sqrt5-QR-down-zero-UP-KEEP-HNDL-critic-v1",
+    "checkpointing": true,
+    "lr": 0.012,
+    "d_lr_mult": 1.5
+  }
+}

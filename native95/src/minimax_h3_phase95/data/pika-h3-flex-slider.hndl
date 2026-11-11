@@ -1,0 +1,2 @@
+features = linear(value, $rank, bias=False, name="down")
+linear(features, $output_width, bias=False, name="up")

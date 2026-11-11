@@ -1,0 +1,36 @@
+[build-system]
+requires=["setuptools>=84.2.1"]
+build-backend="setuptools.build_meta"
+[project]
+name="minimax-h3-native95"
+version="0.1.0.dev0"
+readme="README.md"
+description="Experimental exact native H3 PG095 plus explicit captured-profile runner boundary"
+requires-python=">=3.11,<3.15"
+license="MIT"
+dependencies=[
+ "torch>=2.9,<2.10", "particlegan==0.9.5", "hndl==0.10.0",
+ "hypergan @ git+https://github.com/HyperGAN/HyperGAN.git@5f368a3770cf5bdae0448995c9f76e29af8049f7",
+ "particle-sliders-core @ git+https://github.com/HyperGAN/particle-sliders.git@f7001a821c89df6c2e8473da4f6914db45516aeb#subdirectory=packages/particle-sliders-core",
+ "diffusers @ git+https://github.com/huggingface/diffusers.git@d0b9b1b5a540e5f9df2f8ec236347bf9c5aa7d1f",
+ "transformers==5.22.1", "peft==0.21.2", "accelerate>=1,<2", "safetensors>=0.4,<1", "Pillow>=11,<13"
+]
+[project.optional-dependencies]
+test=["pytest>=8"]
+[project.scripts]
+h3-native95="minimax_h3_native95.cli:main"
+h3-phase95="minimax_h3_phase95.cli:main"
+[project.entry-points."particle_sliders.response_backends"]
+minimax_h3_native_av95="minimax_h3_native95.lifecycle:BACKEND"
+minimax_h3_phase_owned_av95="minimax_h3_phase95.lifecycle:BACKEND"
+[project.entry-points."particle_sliders.inference_backends"]
+minimax_h3_native_av95="minimax_h3_native95.lifecycle:NATIVE_BACKEND"
+minimax_h3_phase_owned_av95="minimax_h3_phase95.lifecycle:NATIVE_BACKEND"
+[tool.setuptools.packages.find]
+where=["src"]
+[tool.setuptools.package-data]
+minimax_h3_native95=["data/*.json","data/*.hndl","*.json"]
+
+minimax_h3_phase95=["data/*.json","data/*.hndl","*.json"]
+
+minimax_h3_runner95=["profile.json", "captured/*.py", "captured/*.json"]

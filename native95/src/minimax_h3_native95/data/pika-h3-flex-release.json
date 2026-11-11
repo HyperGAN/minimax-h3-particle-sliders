@@ -1,0 +1,368 @@
+{
+  "model_id": "Pika-Labs/Pika-H3-Flex",
+  "model_revision": "3ff166447d5edb1406107ab8370c42000ce173e4",
+  "code_revision": "4bf8ea508891a432106e70f675d287c27f02306d",
+  "diffusers_revision": "d0b9b1b5a540e5f9df2f8ec236347bf9c5aa7d1f",
+  "fl2va": {
+    "format_version": 1,
+    "model": "pika-flex",
+    "task": "fl2va",
+    "release_id": "pika-flex-fl2va-v1",
+    "rank": 128,
+    "alpha": 128,
+    "trunk": "transformer",
+    "numerics_policy": "bf16_conditioning_v1",
+    "sampling": {
+      "knots": [
+        1000,
+        750,
+        500,
+        250,
+        100,
+        40,
+        0
+      ],
+      "video_shift": 12.0,
+      "audio_shift": 3.0,
+      "method": "renoise"
+    },
+    "base": {
+      "repo_id": "MiniMaxAI/MiniMax-H3",
+      "revision": "42ed227ee7df40d41602854ae760620d6eb651fe"
+    },
+    "target_modules": [
+      "to_q",
+      "to_k",
+      "to_v",
+      "to_out.0",
+      "ff.net.0.proj",
+      "ff.net.2"
+    ],
+    "sha256": "8ed6115d647ab11c1b38d04e63c4c6e1594128ae312f7b5635cd50563b7b9327",
+    "modified_by": "Mellis, Inc.",
+    "modification_notice": "Modified by Mellis, Inc. in 2026. Copyright \u00a9 2026 Mellis, Inc.\nModel Derivative of MiniMax H3, distributed under the MiniMax H3 Community License Agreement.",
+    "license": "MiniMax H3 Community License Agreement",
+    "copyright": "Copyright \u00a9 2026 Mellis, Inc."
+  },
+  "ref2va": {
+    "format_version": 1,
+    "model": "pika-flex",
+    "task": "ref2va",
+    "release_id": "pika-flex-ref2va-v1",
+    "rank": 128,
+    "alpha": 128,
+    "trunk": "transformer_ref",
+    "numerics_policy": "fp32_conditioning_v1",
+    "sampling": {
+      "knots": [
+        1000,
+        750,
+        500,
+        250,
+        100,
+        40,
+        0
+      ],
+      "video_shift": 12.0,
+      "audio_shift": 3.0,
+      "method": "renoise"
+    },
+    "base": {
+      "repo_id": "MiniMaxAI/MiniMax-H3",
+      "revision": "42ed227ee7df40d41602854ae760620d6eb651fe"
+    },
+    "target_modules": [
+      "to_q",
+      "to_k",
+      "to_v",
+      "to_out.0",
+      "ff.net.0.proj",
+      "ff.net.2"
+    ],
+    "sha256": "eef684ba1258f0cdbbbda6128188ad2688417f2eb17ff875375e74a32b6d61b5",
+    "modified_by": "Mellis, Inc.",
+    "modification_notice": "Modified by Mellis, Inc. in 2026. Copyright \u00a9 2026 Mellis, Inc.\nModel Derivative of MiniMax H3, distributed under the MiniMax H3 Community License Agreement.",
+    "license": "MiniMax H3 Community License Agreement",
+    "copyright": "Copyright \u00a9 2026 Mellis, Inc."
+  },
+  "diffusers_contract_sources": {
+    "models/transformers/transformer_minimax_h3.py": "92d665e9fa10b1417088341dce5977663a180f9e6fa404fb9330062f353fe7ef",
+    "modular_pipelines/modular_pipeline.py": "484d317693bc7b46a140fc4d2c8d094b36d278da99118a67ff3c7efe0c99ec92",
+    "modular_pipelines/pika_h3_flex/modular_pipeline.py": "1e431dd4a668571b2ca1cf39d4a588f6d8586e4250c1d8e1de8bbb328bf392e8",
+    "modular_pipelines/pika_h3_flex/modular_blocks_pika_h3_flex.py": "205d5dbafa5b74b5cef611ab71bb6a6e08d36bb7eec551ef8f3d6770a981fd4c",
+    "modular_pipelines/pika_h3_flex/before_denoise.py": "f089eb0b3aafb484934de5855950b16d72649a9c866050e37369769ba7d9f45a",
+    "modular_pipelines/pika_h3_flex/denoise.py": "bbaa5766a7fd74f1b6972e0b78a8dcb6e450d28219f6ca988aac55d0931a2183",
+    "schedulers/scheduling_minimax_h3.py": "1b3dc1f0f43e3b11ee71bf540201b3fd8e3c4dfab33b19335200c362b48a139a",
+    "loaders/lora_pipeline.py": "44d65463bd3c970856a91952008e66017add7b9e1410aa986ac0706e4566c74d",
+    "loaders/lora_base.py": "772098612819559c03f50063295e1a6b1053e9585e6c3a5a7a99b371a41e62f6",
+    "loaders/peft.py": "31f538e57efdead482081a0f384697f170f150c46858e3aad207465563ee1e79",
+    "models/autoencoders/autoencoder_kl_minimax_h3.py": "58e0ed47fdee8227d738eec5bb1e7a47acc21c65ee3de01aa3795c97d679d015"
+  },
+  "quant_candidate": {
+    "repo_id": "Abiray/MiniMax-H3-GGUF",
+    "revision": "9fc3454d3ebe1be1bade862cd4a5011f325a22cb",
+    "file": "unet/MiniMax-H3-FL2VA-Q4_K_M.gguf",
+    "size": 19864208217,
+    "sha256": "d66125a46c9bee7de3586420843263d9c5185a8d5516949f13b21cd85516e37b",
+    "format": "GGUF, full FL2VA base in native Comfy layout",
+    "pika_adapter": "comfy/loras/pika_h3_flex_fl2va_comfy_bf16.safetensors",
+    "status": "inference candidate only; end-to-end Pika adapter + quant render unverified; not loaded by this Diffusers backend; no trainability claim"
+  },
+  "core": {
+    "repository": "HyperGAN/particle-sliders",
+    "revision": "3c25f785d14073e6f627c0fa9d2297a041c79913",
+    "version": "0.11.0",
+    "particlegan": "0.9.3",
+    "latest_pypi_particlegan": "0.9.4",
+    "status": "preserve exact released core profile; wide native vector admission blocked"
+  },
+  "hypergan_develop": {
+    "revision": "5f368a3770cf5bdae0448995c9f76e29af8049f7",
+    "status": "observed public head; not adopted or qualified for H3 in this task"
+  },
+  "license": "MiniMax H3 Community License Agreement; adapters and base weights retain the agreement; code licenses are separate",
+  "qualification": "CPU contract and tiny native-architecture tests only; pretrained and GPU unqualified",
+  "local_snapshot_files": {
+    "source": "https://huggingface.co/api/models/Pika-Labs/Pika-H3-Flex/tree/3ff166447d5edb1406107ab8370c42000ce173e4?recursive=true&expand=false&limit=1000",
+    "files": {
+      "audio_scheduler/scheduler_config.json": {
+        "size": 354,
+        "algorithm": "git-blob-sha1",
+        "digest": "418c818fb267e3552fdfde984b027426db57b4db"
+      },
+      "audio_vae/config.json": {
+        "size": 2508,
+        "algorithm": "git-blob-sha1",
+        "digest": "c93d1a6c038bdd96becd7665686503e5c8484223"
+      },
+      "audio_vae/diffusion_pytorch_model.safetensors": {
+        "size": 605429340,
+        "algorithm": "sha256",
+        "digest": "52c59e67ba8de5477c81bfbced0327aabf500f1bfdeefd5ee754529241cb26cb",
+        "same_path_minimax_blob_match": true
+      },
+      "modular_model_index.json": {
+        "size": 3085,
+        "algorithm": "git-blob-sha1",
+        "digest": "c193043a9fa852241a7bc7bc8dd92d57e1a1c632"
+      },
+      "processor/chat_template.jinja": {
+        "size": 5537,
+        "algorithm": "git-blob-sha1",
+        "digest": "bdb4dd8c25fdef31d3c66423bd4449ba755d27eb"
+      },
+      "processor/processor_config.json": {
+        "size": 1460,
+        "algorithm": "git-blob-sha1",
+        "digest": "3796d68df3380c74d7cfa5484963e393e4c6f15f"
+      },
+      "processor/tokenizer.json": {
+        "size": 11424240,
+        "algorithm": "sha256",
+        "digest": "2177fd24d449d3032c8cb20644c7bd133146f67b005a04cf1af00b648d0036bb"
+      },
+      "processor/tokenizer_config.json": {
+        "size": 1139,
+        "algorithm": "git-blob-sha1",
+        "digest": "457bca68940e02e20dc8535a3b03e22d7c928df6"
+      },
+      "scheduler/scheduler_config.json": {
+        "size": 355,
+        "algorithm": "git-blob-sha1",
+        "digest": "59d0cdc1fa262d51f148fe4d02944b988a15f5b1"
+      },
+      "text_encoder/config.json": {
+        "size": 1768,
+        "algorithm": "git-blob-sha1",
+        "digest": "e3e6ca009970bfdffc1c176422d62a5f3b4b18ae"
+      },
+      "text_encoder/generation_config.json": {
+        "size": 355,
+        "algorithm": "git-blob-sha1",
+        "digest": "c9087f9d613161971db385499747abbb4bdabd25"
+      },
+      "text_encoder/model-00001-of-00002.safetensors": {
+        "size": 49921170552,
+        "algorithm": "sha256",
+        "digest": "9f40e560d61d94338dcdacd1a1ad13bd9cb12c69db5a77c8fd36846bd4c73dc4",
+        "same_path_minimax_blob_match": false
+      },
+      "text_encoder/model-00002-of-00002.safetensors": {
+        "size": 16793744744,
+        "algorithm": "sha256",
+        "digest": "eee04a35418c2e1cfd5f3211cb44897e710c2b62b189d5dee78560dd186ab6ee",
+        "same_path_minimax_blob_match": false
+      },
+      "text_encoder/model.safetensors.index.json": {
+        "size": 98082,
+        "algorithm": "git-blob-sha1",
+        "digest": "8d283ebf131d131fd37999fc332caeb5bbe17a01"
+      },
+      "tokenizer/chat_template.jinja": {
+        "size": 5537,
+        "algorithm": "git-blob-sha1",
+        "digest": "bdb4dd8c25fdef31d3c66423bd4449ba755d27eb"
+      },
+      "tokenizer/tokenizer.json": {
+        "size": 11424240,
+        "algorithm": "sha256",
+        "digest": "2177fd24d449d3032c8cb20644c7bd133146f67b005a04cf1af00b648d0036bb"
+      },
+      "tokenizer/tokenizer_config.json": {
+        "size": 1098,
+        "algorithm": "git-blob-sha1",
+        "digest": "12b2c96b0a25c8de5adf2ffacfcccc1ee621dafb"
+      },
+      "transformer/config.json": {
+        "size": 783,
+        "algorithm": "git-blob-sha1",
+        "digest": "fcdc87a1c99eaae9c83e97149b3b03b188d47b8d"
+      },
+      "transformer/diffusion_pytorch_model-00001-of-00007.safetensors": {
+        "size": 9717836712,
+        "algorithm": "sha256",
+        "digest": "62ebf6d1085fd59f99c868c46b0c891bc5744edcf61ee42b044770054c44736c",
+        "same_path_minimax_blob_match": false
+      },
+      "transformer/diffusion_pytorch_model-00002-of-00007.safetensors": {
+        "size": 9500438264,
+        "algorithm": "sha256",
+        "digest": "44171cf0aae319f360718fe3fb1ae2f9b0f8423c8bae79634bf23fc720c121ff",
+        "same_path_minimax_blob_match": false
+      },
+      "transformer/diffusion_pytorch_model-00003-of-00007.safetensors": {
+        "size": 9866738880,
+        "algorithm": "sha256",
+        "digest": "1453b39bcd7387381e65557a972caf73dd1e6bca03ec4bb1c209e4c1369794a0",
+        "same_path_minimax_blob_match": false
+      },
+      "transformer/diffusion_pytorch_model-00004-of-00007.safetensors": {
+        "size": 9500438312,
+        "algorithm": "sha256",
+        "digest": "11be2d8e71213254556d3d0170b7e963e05ce76748d0ba3cb2de7e7f9f85c1a9",
+        "same_path_minimax_blob_match": false
+      },
+      "transformer/diffusion_pytorch_model-00005-of-00007.safetensors": {
+        "size": 9866738880,
+        "algorithm": "sha256",
+        "digest": "52dbbf14da75ede2d2bb2898da163290f48fd072fcfe06bdd166878a7ba20f73",
+        "same_path_minimax_blob_match": false
+      },
+      "transformer/diffusion_pytorch_model-00006-of-00007.safetensors": {
+        "size": 9500438312,
+        "algorithm": "sha256",
+        "digest": "11a53fbd223583a6e9ad89e69d58bd54a1dc5c5c21cc7db4a9c3736dfb5cfb18",
+        "same_path_minimax_blob_match": false
+      },
+      "transformer/diffusion_pytorch_model-00007-of-00007.safetensors": {
+        "size": 8327878168,
+        "algorithm": "sha256",
+        "digest": "bab5624bbcd76913eb78a4f2fb4fa4a67ffb5da6ff727a3c377d690b2029af3e",
+        "same_path_minimax_blob_match": false
+      },
+      "transformer/diffusion_pytorch_model.safetensors.index.json": {
+        "size": 64683,
+        "algorithm": "git-blob-sha1",
+        "digest": "01f7ff4e01ee3c35c4df884086572e2c09980ba6"
+      },
+      "vae/config.json": {
+        "size": 2248,
+        "algorithm": "git-blob-sha1",
+        "digest": "c6585c33aa97b316bca82d62bba0cfe8dabfd048"
+      },
+      "vae/diffusion_pytorch_model-00001-of-00002.safetensors": {
+        "size": 9920387264,
+        "algorithm": "sha256",
+        "digest": "83ad0db531f960c4f53787a8e018c20d1754734c0c640abc34d43b4189af3f91",
+        "same_path_minimax_blob_match": false
+      },
+      "vae/diffusion_pytorch_model-00002-of-00002.safetensors": {
+        "size": 495172768,
+        "algorithm": "sha256",
+        "digest": "6eea7bd36b5a1d7d7868df6bb82a394056b0f7b431d71fb008ce37bbada41ce2",
+        "same_path_minimax_blob_match": false
+      },
+      "vae/diffusion_pytorch_model.safetensors.index.json": {
+        "size": 74423,
+        "algorithm": "git-blob-sha1",
+        "digest": "5a4c55e0f5318c14b7f6310ad05ef772bce1eea7"
+      }
+    },
+    "base_identity_limit": "Pinned official Pika packaged base bytes are required. The original MiniMax checkpoints use different packaging; equal tensor contents are not independently established by these file hashes. No pretrained shards were downloaded or hashed in this task."
+  },
+  "temporal_contract": {
+    "fps": 24,
+    "min_requested_frames": 120,
+    "max_requested_frames": 360,
+    "frames_per_chunk": 17,
+    "latents_per_chunk": 5,
+    "min_aligned_frames": 124,
+    "max_aligned_frames": 362,
+    "rule": "requested 5-15 seconds are rounded upward to 17*n+5; this is not a 4*k+1 VAE",
+    "source": "src/diffusers/modular_pipelines/pika_h3_flex/modular_pipeline.py and before_denoise.py at d0b9b1b5a540e5f9df2f8ec236347bf9c5aa7d1f",
+    "vae_clip_length": 17,
+    "vae_temporal_compression_ratio": 4,
+    "tokens_chunk_size_derivation": "ceil(clip_length / temporal_compression_ratio) = ceil(17 / 4) = 5",
+    "latent_frame_bias": 2,
+    "audio_latents_per_second": 40,
+    "audio_channels": 2
+  },
+  "packed_geometry": {
+    "canvases": {
+      "480p": [
+        480,
+        832
+      ],
+      "768p": [
+        768,
+        1344
+      ]
+    },
+    "row_spatial_multiple": 32,
+    "video_features": 96,
+    "audio_features": 32,
+    "source": "Pinned Pika H3 Flex modular_pipeline.py geometry and transformer config (24 video channels, 1x2x2 patches; 32 audio features)"
+  },
+  "geometry_provenance": {
+    "diffusers_revision": "d0b9b1b5a540e5f9df2f8ec236347bf9c5aa7d1f",
+    "source_sha256": "1e431dd4a668571b2ca1cf39d4a588f6d8586e4250c1d8e1de8bbb328bf392e8",
+    "constants": {
+      "latent_frame_bias": {
+        "value": 2,
+        "source": "https://github.com/huggingface/diffusers/blob/d0b9b1b5a540e5f9df2f8ec236347bf9c5aa7d1f/src/diffusers/modular_pipelines/pika_h3_flex/modular_pipeline.py#L176-L190",
+        "derivation": "video_latent_num_frames returns ((num_frames-latents_per_chunk)//frames_per_chunk)*latents_per_chunk + 2"
+      },
+      "audio_latents_per_second": {
+        "value": 40,
+        "source": "https://github.com/huggingface/diffusers/blob/d0b9b1b5a540e5f9df2f8ec236347bf9c5aa7d1f/src/diffusers/modular_pipelines/pika_h3_flex/modular_pipeline.py#L194-L209",
+        "derivation": "audio_latent_num_frames default uses PIKA_H3_FLEX_AUDIO_LATENTS_PER_SECOND=40"
+      },
+      "audio_channels": {
+        "value": 2,
+        "source": "https://github.com/huggingface/diffusers/blob/d0b9b1b5a540e5f9df2f8ec236347bf9c5aa7d1f/src/diffusers/modular_pipelines/pika_h3_flex/modular_pipeline.py#L318-L320",
+        "derivation": "audio_channels property returns stereo PIKA_H3_FLEX_AUDIO_CHANNELS=2"
+      },
+      "canvases": {
+        "source": "https://github.com/huggingface/diffusers/blob/d0b9b1b5a540e5f9df2f8ec236347bf9c5aa7d1f/src/diffusers/modular_pipelines/pika_h3_flex/modular_pipeline.py#L65-L80",
+        "derivation": "PIKA_H3_FLEX_TIER_RULES p480 and p768 short edges and pixel budgets yield [480,832] and [768,1344]"
+      },
+      "row_spatial_multiple": {
+        "value": 32,
+        "source": "https://github.com/huggingface/diffusers/blob/d0b9b1b5a540e5f9df2f8ec236347bf9c5aa7d1f/src/diffusers/modular_pipelines/pika_h3_flex/modular_pipeline.py#L250-L300",
+        "derivation": "vae_spatial_compression_ratio=16 times patch_size spatial factor2"
+      },
+      "video_features": {
+        "value": 96,
+        "source": "https://github.com/huggingface/diffusers/blob/d0b9b1b5a540e5f9df2f8ec236347bf9c5aa7d1f/src/diffusers/modular_pipelines/pika_h3_flex/modular_pipeline.py#L256-L294",
+        "model_config": "https://huggingface.co/Pika-Labs/Pika-H3-Flex/blob/3ff166447d5edb1406107ab8370c42000ce173e4/transformer/config.json",
+        "derivation": "vae_latent_channels=24 * product(patch_size=(1,2,2))=96; corroborated by released transformer in_channels and patch_size"
+      },
+      "audio_features": {
+        "value": 32,
+        "source": "https://github.com/huggingface/diffusers/blob/d0b9b1b5a540e5f9df2f8ec236347bf9c5aa7d1f/src/diffusers/modular_pipelines/pika_h3_flex/modular_pipeline.py#L280-L284",
+        "derivation": "audio_latent_channels property default32; released transformer audio_in_channels=32"
+      }
+    },
+    "qualification": "Derived from pinned source/defaults and published model configuration; actual native packing fixtures verify both canvas tiers, without pretrained weights."
+  }
+}

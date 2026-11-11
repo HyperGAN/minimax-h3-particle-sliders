@@ -1,0 +1,31 @@
+{
+  "schema": "h3-phase-owned-additional-native-operative-Source-v1",
+  "diffusers_revision": "d0b9b1b5a540e5f9df2f8ec236347bf9c5aa7d1f",
+  "transformers_version": "5.22.1",
+  "files": {
+    "diffusers/modular_pipelines/pika_h3_flex/encoders.py": {
+      "bytes": 37755,
+      "sha256": "2573c5c42e3973c80f1ed65b7b1f43d128ef78f5ca6cbb706cd6b8b9de58994e"
+    },
+    "diffusers/modular_pipelines/pika_h3_flex/decoders.py": {
+      "bytes": 11785,
+      "sha256": "e4072f883f8ad8d72237b49219219210c942f51e2ef2cc8ea722f2210564f289"
+    },
+    "diffusers/models/autoencoders/autoencoder_kl_minimax_h3_audio.py": {
+      "bytes": 30959,
+      "sha256": "b56c5bb95a7dc99ace03df192544615c89ec01ac3b134a7f1dd7348b03731d57"
+    },
+    "diffusers/models/attention_dispatch.py": {
+      "bytes": 165949,
+      "sha256": "3520f4dcbf749350d8aa8cf6d8d87f6da240e7c907c8b5f3b19d78e1e89981c5"
+    },
+    "transformers/models/qwen3_vl/modeling_qwen3_vl.py": {
+      "bytes": 64152,
+      "sha256": "c402239e741216d28471f77fb5eaf302b9b7bdc080e1f9fb2f9c36d95943b3d2"
+    },
+    "transformers/models/qwen3_vl/configuration_qwen3_vl.py": {
+      "bytes": 5750,
+      "sha256": "aad5dcf8b9dcd952e15c555dbaffcd1cbefe2f93fd0fb892c070b30e07d2212c"
+    }
+  }
+}

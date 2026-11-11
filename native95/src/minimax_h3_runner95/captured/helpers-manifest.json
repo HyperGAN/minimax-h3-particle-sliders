@@ -1,0 +1,46 @@
+{
+  "schema": "H3-archived-exact-execution-helpers-v1",
+  "not_automatically_activated": true,
+  "historical_factory_main_counts": [
+    24,
+    26
+  ],
+  "available_execution_overrides": [
+    [
+      24,
+      26
+    ],
+    [
+      25,
+      25
+    ]
+  ],
+  "Source": [
+    {
+      "file": "hndl_rows_original.py",
+      "bytes": 9729,
+      "sha256": "4be7f7f05abbcf9e923efcf2bcebb8c43649abe12c11b41a159ea7e5394e103f"
+    },
+    {
+      "file": "native_peft_hndl_rows.py",
+      "bytes": 16283,
+      "sha256": "e090a08dab64ec1627bfb9554e218f97da3adadbfa10cd966a12767a5db63dd9"
+    },
+    {
+      "file": "synchronous_diagnostic.py",
+      "bytes": 10845,
+      "sha256": "1210fc925e7bab2c589b93325d89d24d2fd927751569685877e614bfa01a0db1"
+    },
+    {
+      "file": "placement24_26_route_cachetrim.py",
+      "bytes": 14718,
+      "sha256": "d7ab68f7f6b62de1b71815cbcbaaed266c40bc1bc95e0dbf37bfe79aeb60a058"
+    },
+    {
+      "file": "placement25_25_route_cachetrim.py",
+      "bytes": 14705,
+      "sha256": "5be5d59f770fbfd9fd1234847e8e64ecb7f9f6c0d1d638368349dc199599d188"
+    }
+  ],
+  "bitwise_or_fit_or_LR_claim": false
+}

@@ -1,0 +1,36 @@
+{
+  "schema": "installed-owner-api-software-validation-v1",
+  "date_UTC": "2026-11-11",
+  "tested_code_commit": "84d7b582eea19ec2cc7e9cd1636a5ba42a87f787",
+  "actual_executor_handle": 68434,
+  "actual_outer_exit_code": 0,
+  "actual_reap_chunk": "984dff",
+  "actual_terminal_sha256": "7bed482a94e6150f161ba4d1c00f0f19ced31358e45e261bfc2d372aba556fa5",
+  "actual_result_sha256": "73cd72ceb584c2c757c49e5153c0c4943a8b12fc29abad9b5afa2e09b7c2591e",
+  "distribution": "minimax-h3-native95",
+  "version": "0.1.0.dev0",
+  "counts": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "test_nodes": [
+    "fresh95_runner_owner_check.py::RunnerBoundary::test_actual_held_flock_modes_and_identity",
+    "fresh95_runner_owner_check.py::RunnerBoundary::test_policy_refusal_is_not_an_admission",
+    "fresh95_runner_owner_check.py::RunnerBoundary::test_foreign_marker_refuses_before_close_and_retry_is_pending_only",
+    "fresh95_runner_owner_check.py::RunnerBoundary::test_official_train_and_step_delegate_once"
+  ],
+  "exact_installed_Source_and_RECORD_verified": true,
+  "retained_core_commit": "f7001a821c89df6c2e8473da4f6914db45516aeb",
+  "neutral_directory": true,
+  "source_PYTHONPATH": false,
+  "pytest_configuration": "/dev/null",
+  "blocked_calls": [],
+  "GPU_used": false,
+  "pretrained_model_calls": 0,
+  "optimizer_updates": 0,
+  "old_tests_or_proofs_replayed": false,
+  "full_native_installed_package_execution_verified": false,
+  "LR_selection_authority": false
+}

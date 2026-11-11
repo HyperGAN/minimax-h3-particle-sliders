@@ -1,0 +1,4 @@
+joined = concat(response, condition, name="joined")
+features = linear(joined, $hidden, name="hidden")
+features = silu(features, name="activation")
+linear(features, 1, name="logits")

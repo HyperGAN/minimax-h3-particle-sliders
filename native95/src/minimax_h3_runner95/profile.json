@@ -1,0 +1,49 @@
+{
+  "schema": "H3-runner95-exact-public-experimental-profile-v1",
+  "new_runner_boundary": "minimax_h3_runner95",
+  "runtime_namespaces_byteexact": [
+    "minimax_h3_phase95",
+    "minimax_h3_native95"
+  ],
+  "backend": "minimax_h3_phase_owned_av95",
+  "historical_factory_profile": "h3-native-allCUDA-DiT24-26-refiner1-1-PG0-group5-sync-unwind-FF512-v3",
+  "physical_UUIDs": [
+    "GPU-72c1b506-891d-b8bc-b353-e020585e1c47",
+    "GPU-cb4ce47d-d968-bffd-5646-e830a9fa1c69"
+  ],
+  "portable": false,
+  "original_runtime_and_source_manifests_rewritten": false,
+  "archived_execution_helpers_not_automatically_activated": true,
+  "core_source_commit": "f7001a821c89df6c2e8473da4f6914db45516aeb",
+  "core_runtime_parent": "41f6066f2d2644902670d5eb736de052e1a70553",
+  "core_guarded_version": "0.14.1",
+  "all12_guarded_core_Source_SHA256": {
+    "initialization.py": "636dc1db85c9cd3c6dd7495cd943218170653c2fed16bdd1c6bb3b1b4d6f71eb",
+    "pg09.py": "1552615862c59b0658f0b36f25d7c57f4aba2d8fba16b863e4c98ae79fc6553f",
+    "pg095.py": "ecfaf6ad16f092bb1b76df64201858671ccdc2a341d6c8c50650574dc9a937e3",
+    "pg09_audio.py": "398f7fa4bab5d44f849b25efc47a23d0c3ba83d975a61180ae57fcbc5597b36d",
+    "response.py": "ede5387777b0efa43d74c71c4f0b7c7ebe6a4b053c441a852e909e5014045f3e",
+    "lifecycle.py": "058538569f47b6f333d0fad4c417fb99748f6585237875f1a825a8afe13047bb",
+    "inference.py": "2ecb2a791089f93af12deb447b26d9f81a2600e1b8d816eff89102207affdc88",
+    "routed_projection.py": "d71e032c1a578e7fdc0494b3d43b982b3b4afdbc4ba859f21f75e2118c347e04",
+    "pg09_backends.py": "28db035a4c6c7f17ae14cbd2c1fa6ec404465322e0e7829149150826ee22a7ad",
+    "field_critic.py": "4fbff8f1a01497f43c4b50b116a69bde5b01a6aeff6bb63d4e0c9418e69f39d1",
+    "restoration.py": "447352d536d3da81d4035a6f5859ad7b05f0b2abbe9275c5b69faaf080cb7472",
+    "weight_policy.py": "865c64664c973698cd00995b04ec6b89c1b8093b37cb0bebacdfdba1ceeb80dc"
+  },
+  "PG": "0.9.5",
+  "EMA": null,
+  "official_optimizer_scalar_statistics_unchanged": true,
+  "measured_H3_LR": null,
+  "retained_starting_recipe": {
+    "G": 0.012,
+    "d_lr_mult": 1.5,
+    "D": 0.018000000000000002,
+    "particle_bank": null,
+    "not_measured_recommendation": true
+  },
+  "new_public_runner_software_execution": null,
+  "new_public_package_build_install": null,
+  "new_native_training_fit": null,
+  "new_finished_AV_qualification": null
+}
