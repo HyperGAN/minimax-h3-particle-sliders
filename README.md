@@ -77,3 +77,10 @@ pretrained loading, GPU fit, audiovisual quality, quantized training or deployme
 Code retains the original MIT attribution in LICENSE. Model weights and derivative
 adapters retain the MiniMax H3 Community License and their original notices;
 the code license does not relicense them. No model weights are included.
+
+## Experimental ParticleGAN 0.9.5 API
+
+The separate [native95 profile and runner API](native95/README.md) provides the
+captured full AV backend, fresh initialization and exact FULL/RAW instructions.
+Its two-GPU profile is hardware-specific; an H3 learning-rate comparison is
+still pending. Install it in a separate environment from this historical package.

@@ -1,0 +1,17 @@
+{
+  "schema": "H3-allCUDA-grouped-checkpoint-runtime-Source-sync-unwind-v2",
+  "torch_version": "2.9.1+cu128",
+  "diffusers_revision": "d0b9b1b5a540e5f9df2f8ec236347bf9c5aa7d1f",
+  "files": {
+    "torch/utils/checkpoint.py": {
+      "bytes": 68879,
+      "sha256": "431b229da53972d79bed7e5dbfb6ace2922fff30192ea103208f484e59490f23"
+    },
+    "diffusers/models/transformers/transformer_minimax_h3.py": {
+      "bytes": 33045,
+      "sha256": "92d665e9fa10b1417088341dce5977663a180f9e6fa404fb9330062f353fe7ef"
+    }
+  },
+  "core_scale_wrapper_sha256": "28db035a4c6c7f17ae14cbd2c1fa6ec404465322e0e7829149150826ee22a7ad",
+  "checkpoint_lifetime": "owned-nonreentrant-generator-finally-close-v2"
+}
