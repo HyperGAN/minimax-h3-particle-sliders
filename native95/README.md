@@ -177,3 +177,7 @@ comparisons and ties. Teacher SSE, drift and visual beauty do not select or
 break ties. A qualified catastrophic failure stops the affected candidate;
 weak effect is separate and uncertain checks remain unmeasured. This source
 proposal creates no new qualification, confirmation or calibration gate.
+
+## Installed runner software checks
+
+All four new cases in `tests/fresh95_runner_owner_check.py` passed on 2026-11-11 against the genuine offline-built and installed wheel. They cover actual temporary-file flock modes and identity, policy refusal, foreign-marker/pending cleanup retry, and exact-once delegation to the original training methods. The run used a neutral directory, exact installed Source/RECORD checks and no source `PYTHONPATH`. See the [software validation record](validation/installed-owner-api-20261111.json). No GPU, pretrained model or optimizer work was performed. Full-native execution through the public wheel and the H3 LR comparison remain unverified.
