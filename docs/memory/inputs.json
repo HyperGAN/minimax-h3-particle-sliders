@@ -1,0 +1,253 @@
+{
+  "model_id": "Pika-Labs/Pika-H3-Flex",
+  "revision": "3ff166447d5edb1406107ab8370c42000ce173e4",
+  "mixed_DiT_tensor_bytes": 66280430080,
+  "fixed_Pika_serialized_upper_bytes": 2767274120,
+  "text_encoder_tensor_bytes": 66714780128,
+  "VAE_serialized_upper_bytes": 11020989372,
+  "recorded_execution25_25_frozen_bytes": [
+    33922910720,
+    33741115392
+  ],
+  "public24_26_calculated_frozen_bytes": [
+    32605159424,
+    35058866688
+  ],
+  "block_with_fixed_Pika_bytes": 1317751296,
+  "adapter_parameters": 20873216,
+  "critic_upper_parameters": 22376513,
+  "trainable_update_upper_bytes": 3459978320,
+  "no_particle_bank": true,
+  "quantized_profile_shipped": false,
+  "schema": "calculated-memory-inputs-v1",
+  "repository": "minimax-h3-particle-sliders",
+  "calculated_on": "2026-11-14",
+  "unit": "GiB=2^30 bytes",
+  "measured": false,
+  "profiles": [
+    {
+      "operation": "Public original BF16 AV training",
+      "gpu_count": 2,
+      "vram_gib_per_gpu": [
+        96,
+        96
+      ],
+      "host_ram_gib": 80,
+      "limits": "B2;5s480p/124frames; text\u2264256; saved24/26; group5/FF512/row512",
+      "ledger": {
+        "frozen_per_gpu_gib": [
+          30.365921020507812,
+          32.651113986968994
+        ],
+        "active_group_gib": 42,
+        "checkpoint_boundary_gib": 4,
+        "trainable_update_on_GPU0_gib": 3.222355917096138,
+        "workspace_gib": 8
+      },
+      "calculated_vram_subtotal_gib": [
+        87.58827693760395,
+        86.651113986969
+      ],
+      "host_ledger_gib": {
+        "CPU_DiT": 61.7285,
+        "source_shard": 9.19,
+        "fixed_Pika": 1.289,
+        "cache_and_snapshots": 2,
+        "runtime": 5
+      },
+      "host_subtotal_gib": 79.2075
+    },
+    {
+      "operation": "Public original BF16 AV sampling",
+      "gpu_count": 2,
+      "vram_gib_per_gpu": [
+        48,
+        52
+      ],
+      "host_ram_gib": 80,
+      "limits": "B1;5s480p/124frames; text\u2264256; saved24/26; native6steps",
+      "ledger": {
+        "frozen_per_gpu_gib": [
+          30.365921020507812,
+          32.651113986968994
+        ],
+        "live_working_per_gpu_gib": 7,
+        "workspace_gib": 8
+      },
+      "calculated_vram_subtotal_gib": [
+        45.36592102050781,
+        47.651113986968994
+      ],
+      "host_ledger_gib": {
+        "CPU_DiT": 61.7285,
+        "source_shard": 9.19,
+        "fixed_Pika": 1.289,
+        "cache_and_snapshots": 2,
+        "runtime": 5
+      },
+      "host_subtotal_gib": 79.2075
+    },
+    {
+      "operation": "Native sampling, largest release geometry",
+      "gpu_count": 2,
+      "vram_gib_per_gpu": [
+        96,
+        96
+      ],
+      "host_ram_gib": 80,
+      "limits": "B1;15s768p/362frames; text\u2264256; BF16; saved24/26",
+      "ledger": {
+        "frozen_per_gpu_gib": [
+          30.365921020507812,
+          32.651113986968994
+        ],
+        "live_working_per_gpu_gib": 52,
+        "workspace_gib": 10
+      },
+      "calculated_vram_subtotal_gib": [
+        92.36592102050781,
+        94.651113986969
+      ],
+      "host_ledger_gib": {
+        "CPU_DiT": 61.7285,
+        "source_shard": 9.19,
+        "fixed_Pika": 1.289,
+        "cache_and_snapshots": 2,
+        "runtime": 5
+      },
+      "host_subtotal_gib": 79.2075
+    },
+    {
+      "operation": "Separate local FP4 AV training cohort",
+      "gpu_count": 2,
+      "vram_gib_per_gpu": [
+        72,
+        72
+      ],
+      "host_ram_gib": 48,
+      "limits": "B2;5s480p; text\u2264256; balanced25/25; full architecture/Pika",
+      "ledger": {
+        "total_frozen_quant_upper_gib": 20.938354454934597,
+        "active_group_and_boundaries_per_gpu_gib": 46,
+        "trainable_update_gib": 3.222355917096138,
+        "workspace_gib": 8
+      },
+      "calculated_vram_subtotal_gib": [
+        67.69153314456344,
+        64.4691772274673
+      ],
+      "host_ledger_gib": {
+        "source_shard": 9.19,
+        "quantized_CPU_staging": 21,
+        "cache_and_snapshots": 4,
+        "runtime": 10
+      },
+      "host_subtotal_gib": 44.19
+    },
+    {
+      "operation": "BF16 text conditioning phase",
+      "gpu_count": 1,
+      "vram_gib_per_gpu": 80,
+      "host_ram_gib": 128,
+      "limits": "One prompt;\u22644096tokens; full Qwen3-VL32B; no KV",
+      "ledger": {
+        "frozen_gib": 62.13298079371452,
+        "all_hidden_states_gib": 2.54,
+        "workspace_gib": 10
+      },
+      "calculated_vram_subtotal_gib": 74.67298079371453,
+      "host_ledger_gib": {
+        "CPU_Qwen": 62.133,
+        "largest_source_shard": 46.494,
+        "hidden_outputs": 2.54,
+        "runtime": 8
+      },
+      "host_subtotal_gib": 119.16700000000002
+    },
+    {
+      "operation": "Separate local FP4 text conditioning phase",
+      "gpu_count": 1,
+      "vram_gib_per_gpu": 32,
+      "host_ram_gib": 64,
+      "limits": "One prompt;\u22644096tokens; full Qwen FP4/BF16; no KV",
+      "ledger": {
+        "packed_all_parameter_upper_gib": 17.47490084823221,
+        "islands_gib": 6,
+        "hidden_states_gib": 2.54,
+        "workspace_gib": 5
+      },
+      "calculated_vram_subtotal_gib": 31.01490084823221,
+      "host_ledger_gib": {
+        "largest_source_shard": 46.494,
+        "hidden_outputs": 2.54,
+        "loading_temporary": 3,
+        "runtime": 8
+      },
+      "host_subtotal_gib": 60.034
+    },
+    {
+      "operation": "Separate native AV VAE decode",
+      "gpu_count": 1,
+      "vram_gib_per_gpu": 48,
+      "host_ram_gib": 64,
+      "limits": "B1;5s480p; frozen video/audioVAEs; FP32; DiTclosed first",
+      "ledger": {
+        "frozen_serialized_upper_gib": 10.264096196740866,
+        "FP32_conversion_allowance_gib": 10.264096196740866,
+        "live_decode_gib": 12,
+        "workspace_gib": 8
+      },
+      "calculated_vram_subtotal_gib": 40.52819239348173,
+      "host_ledger_gib": {
+        "CPU_VAEs": 10.265,
+        "FP32_conversion_copy": 10.265,
+        "source_shard": 9.24,
+        "decode": 12,
+        "runtime": 8
+      },
+      "host_subtotal_gib": 49.77
+    }
+  ],
+  "source_records": [
+    {
+      "path": "native95/src/minimax_h3_phase95/contracts.py",
+      "bytes": 5861,
+      "sha256": "b83959956d488017886d791752996a3d58d5735d4dd6361713982d1cb62f0dd7"
+    },
+    {
+      "path": "native95/src/minimax_h3_phase95/native.py",
+      "bytes": 13213,
+      "sha256": "099bc0da2ba0795ee2dc45b12bf93b6422f298dc1a99dd31d455b5f06aec12c4"
+    },
+    {
+      "path": "native95/src/minimax_h3_phase95/adapter.py",
+      "bytes": 11259,
+      "sha256": "43793d7cf3745e954bc7eeda917ce934cf0b7e320a53219f6e35ae1f617c9f5a"
+    },
+    {
+      "path": "native95/src/minimax_h3_phase95/bounded_critic.py",
+      "bytes": 2786,
+      "sha256": "ac5fef8addc3bdb79622a87fb1f64fd6b29315efd60236f7269abf46c37a46dc"
+    },
+    {
+      "path": "native95/src/minimax_h3_phase95/data/pika-h3-flex-critic.hndl",
+      "bytes": 182,
+      "sha256": "db58a4e586cb5521eef362f0302f9821eeb646fcc5c1fcc04762b97996ed3764"
+    },
+    {
+      "path": "native95/src/minimax_h3_phase95/grouped_checkpoint.py",
+      "bytes": 13635,
+      "sha256": "2edf196b03f2eb2042bf67bb13592e67dce72ddcf7f8a18f7df6241122145f42"
+    },
+    {
+      "path": "native95/src/minimax_h3_phase95/placement.py",
+      "bytes": 5736,
+      "sha256": "5cc7e2b3bf3fc4fcb49708556afcb092fb4988e9aad8ff01a78f75fa9c3808c4"
+    }
+  ],
+  "static_placement_source_record": {
+    "path": "/ml2/particlesliders-working/lr-work/source-reviews/minimax-h3-originalFULL0-20-30-peer-protected-first32-twoGPU-source-v1/static-capacity-and-history.json",
+    "bytes": 5208,
+    "sha256": "7eca290e4c954f8ed70727231dd206a194388a889bdd29f72d9059c2cd4b2fb0"
+  }
+}

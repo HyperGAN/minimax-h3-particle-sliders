@@ -1,5 +1,11 @@
 # MiniMax-H3 particle sliders
 
+**Memory (calculated):** public full BF16 AV default training: **2 GPUs, plan96 GiB each /80 GiB RAM**; sampling5s480p: **48/52 GiB**. Separate local FP4 cohort is documented independently. See [MEMORY.md](MEMORY.md) for the complete budgets and assumptions.
+
+
+
+
+
 **Experimental source publication.** Synthetic/software CPU evidence only. Historical UNI and the guarded modern shared-session candidate stay separate. No native/GPU/media/quantized quality qualification is established; wide-vector admission still refuses.
 
 See [PUBLICATION.md](PUBLICATION.md) for sanitation, lineage and current CPU/CI limits.
