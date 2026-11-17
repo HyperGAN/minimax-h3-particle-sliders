@@ -18,8 +18,8 @@ native = [
   "transformers>=5.15,<6", "peft>=0.20,<0.22", "accelerate>=1,<2",
 ]
 shared = [
-  "particle-sliders-core @ git+https://github.com/HyperGAN/particle-sliders.git@a794e3b4a8813b012f2c4faa3da82b78d4a90214#subdirectory=packages/particle-sliders-core",
-  "particlegan==0.9.4", "hndl==0.10.0",
+  "particle-sliders-core @ git+https://github.com/HyperGAN/particle-sliders.git@119d7e0559bacdc49847961c1b243ac08daa013c#subdirectory=packages/particle-sliders-core",
+  "particlegan==0.10.1", "hndl==0.10.0",
   "hypergan @ git+https://github.com/HyperGAN/HyperGAN.git@5f368a3770cf5bdae0448995c9f76e29af8049f7",
 ]
 test = ["pytest>=8"]
