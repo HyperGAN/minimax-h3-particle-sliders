@@ -18,8 +18,8 @@ native = [
   "transformers>=5.15,<6", "peft>=0.20,<0.22", "accelerate>=1,<2",
 ]
 shared = [
-  "particle-sliders-core @ git+https://github.com/HyperGAN/particle-sliders.git@a794e3b4a8813b012f2c4faa3da82b78d4a90214#subdirectory=packages/particle-sliders-core",
-  "particlegan==0.9.4", "hndl==0.10.0",
+  "particle-sliders-core @ git+https://github.com/HyperGAN/particle-sliders.git@c13890f8e2a1ecf1dc8eb9f2a37f9187cb9fea78#subdirectory=packages/particle-sliders-core",
+  "particlegan==0.11.0", "hndl==0.10.0",
   "hypergan @ git+https://github.com/HyperGAN/HyperGAN.git@5f368a3770cf5bdae0448995c9f76e29af8049f7",
 ]
 test = ["pytest>=8"]
@@ -43,7 +43,8 @@ include-package-data = false
   "data/prompts-minimax-h3.yaml", "data/prompts-minimax-h3-chiaroscuro.yaml",
   "data/pika-h3-flex-release.json", "data/pika-h3-flex-session.json",
   "data/pika-h3-flex-slider.hndl", "data/pika-h3-flex-critic.hndl",
-  "data/h3-extraction.json",
+  "data/h3-extraction.json", "data/h3-current-sources.json",
+  "fibo_critic.hndl", "fibo_projection.hndl", "fibo_hndl_010_sources.json",
 ]
 
 [tool.pytest.ini_options]

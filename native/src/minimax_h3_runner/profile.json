@@ -1,0 +1,23 @@
+{
+  "schema": "h3-runner-current-engine-v1",
+  "runner_namespace": "minimax_h3_runner",
+  "backend": "minimax_h3_phase_owned_av",
+  "core_source_commit": "c13890f8e2a1ecf1dc8eb9f2a37f9187cb9fea78",
+  "core_version": "0.15.1",
+  "particlegan_version": "0.11.0",
+  "weight_policy": "raw-no-weight-ema",
+  "core_sources": {
+    "backends.py": "cd10c3a2daa3f0fcc6a6f9578dfbb0a72bdf6237905d2300595962f0751c7bbc",
+    "engine.py": "4ae51bf86e349728d5fed804709bcf78474615f557891d6c77017e19c4c7e806",
+    "field_critic.py": "4fbff8f1a01497f43c4b50b116a69bde5b01a6aeff6bb63d4e0c9418e69f39d1",
+    "inference.py": "5ba3cfa3df3a3afce0b7b4d9b011ffa2b8585b48b531c36c3122d7983231ddbe",
+    "initialization.py": "7dfc252faca19b1ad59001805432373e758a3d84afc500e98152d76a59311107",
+    "lifecycle.py": "e2b08a36b30eac08505d19b0d22e9aefd226b91893b3ddaf950d94cc8f6c1546",
+    "response.py": "30f1b68f70828ca28c96948d01044cd983fe54688d6fc7309f37f6e1be1b1352",
+    "restoration.py": "447352d536d3da81d4035a6f5859ad7b05f0b2abbe9275c5b69faaf080cb7472",
+    "routed_projection.py": "d71e032c1a578e7fdc0494b3d43b982b3b4afdbc4ba859f21f75e2118c347e04",
+    "weight_policy.py": "a254493817f7b9b259d1c1defcb7eb967a2bcf9ca776e68a92e09a24dffac29a"
+  },
+  "model_scope": "captured BF16 layout, software checks only",
+  "native_training_qualification": null
+}

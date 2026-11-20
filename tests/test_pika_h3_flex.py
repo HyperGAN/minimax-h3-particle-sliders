@@ -325,10 +325,10 @@ def test_shared_admission_forwards_native_shape_without_bypass(monkeypatch):
     def deny(shape, **kwargs):
         calls.append((shape, kwargs))
         raise ValueError("released PG09 cannot admit flat continuous vectors with width >=170")
-    fake = types.ModuleType("particle_sliders.pg09")
+    fake = types.ModuleType("particle_sliders.engine")
     fake.PG_SOURCE_PROFILE = "release-0.9.3"
-    fake.validate_pg09_domain = deny
-    monkeypatch.setitem(sys.modules, "particle_sliders.pg09", fake)
+    fake.validate_engine_domain = deny
+    monkeypatch.setitem(sys.modules, "particle_sliders.engine", fake)
     with pytest.raises(ValueError, match="width >=170"):
         flex.admit_shared_gan((1, 123456))
     assert calls == [((1, 123456), {"response_domain": "continuous_vector", "pg_source_profile": "release-0.9.3", "penalty_input_domain": "auto"})]
@@ -457,7 +457,7 @@ def test_nonunit_adapter_selection_and_direct_disable_fail_closed():
 
 def test_current_shared_generic_peft_scaling_is_rejected(monkeypatch):
     """Execute the actual unmodified helper; never bind it as H3's scaler."""
-    module = pytest.importorskip("particle_sliders.pg09_backends",
+    module = pytest.importorskip("particle_sliders.backends",
                                  reason="generic scaling hazard requires the installed shared dependency")
     backend = tiny_native_backend()
     generic = module.lora_scale_context([("transformer", backend.transformer)])
