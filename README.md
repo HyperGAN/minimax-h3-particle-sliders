@@ -23,8 +23,8 @@ There are two distinct lanes:
 | Lane | Status |
 | --- | --- |
 | [Historical MiniMax-H3 UNI](docs/minimax-h3-slider.md) | Preserved supervised recipe and custom adapter format; not relabeled as shared GAN training. |
-| [Pika H3 Flex native boundary](docs/pika-h3-flex.md) | Local pinned loader, fixed release adapter at 1 and independent slider; pretrained/GPU/media/quantized execution unqualified. |
-| [Pika shared-session candidate](docs/pika-h3-flex-shared-session.md) | Actual installed shared PG lifecycle and HyperGAN/HNDL graphs; native wide-vector admission refuses before loading. |
+| [Pika H3 Flex native boundary](https://github.com/HyperGAN/minimax-h3-particle-sliders/blob/043f8c89ca6425f2f6eec05d24138572e3e19bc1/docs/pika-h3-flex.md) | Local pinned loader, fixed release adapter at 1 and independent slider; pretrained/GPU/media/quantized execution unqualified. |
+| [Pika shared-session candidate](https://github.com/HyperGAN/minimax-h3-particle-sliders/blob/043f8c89ca6425f2f6eec05d24138572e3e19bc1/docs/pika-h3-flex-shared-session.md) | Actual installed shared PG lifecycle and HyperGAN/HNDL graphs; native wide-vector admission refuses before loading. |
 
 This repository owns H3 loading, packing, adapters, graphs, configs and tests.
 Generic lifecycle, ParticleGAN mathematics, checkpoint utilities and the verified
@@ -38,14 +38,12 @@ The `native` extra records the exact reviewed Diffusers commit; its other
 dependencies are compatibility ranges, not a complete reproducibility lock.
 Native loading also verifies the pinned source hashes and local model manifests.
 
-The optional `shared` lane still requires the separately qualified **candidate**
-core 0.12.0 at `a794e3b4a8813b012f2c4faa3da82b78d4a90214`, with PG0.9.4,
-HyperGAN develop `5f368a3770cf5bdae0448995c9f76e29af8049f7` and HNDL0.10.0.
-The optional dependency URL pins that exact commit, and
-`data/pika-h3-flex-session.json` verifies the complete 50-file package source
-closure. A version number alone does not satisfy it. The prior candidate
-cohort remains preserved locally and its artifacts are refused by the new cohort
-without metadata rewriting. No runtime dependency installer is added.
+The optional `shared` lane uses core 0.15.2 at
+`ec1161f5d74481be3540cb0dfa63d0e8f8b54e90` and ParticleGAN 0.11.1.
+The product declares HNDL 0.10.0 and HyperGAN at
+`5f368a3770cf5bdae0448995c9f76e29af8049f7` directly. The installed core
+closure is verified before forming a session. Older artifacts retain the
+dependencies and source of their original cohort.
 
 Installed commands are `h3-flex` (provenance/admission/gradient probe),
 `h3-legacy-uni` and `h3-legacy-diag`. Their `--help` is safe and does not load
@@ -84,9 +82,9 @@ Code retains the original MIT attribution in LICENSE. Model weights and derivati
 adapters retain the MiniMax H3 Community License and their original notices;
 the code license does not relicense them. No model weights are included.
 
-## Experimental ParticleGAN 0.9.5 API
+## Experimental native API
 
-The separate [native95 profile and runner API](native95/README.md) provides the
+The separate [native profile and runner API](native/README.md) provides the
 captured full AV backend, fresh initialization and exact FULL/RAW instructions.
 Its two-GPU profile is hardware-specific; an H3 learning-rate comparison is
 still pending. Install it in a separate environment from this historical package.

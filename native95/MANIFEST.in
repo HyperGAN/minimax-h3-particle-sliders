@@ -1,3 +1,0 @@
-include README.md NOTICE.md session.example.json
-recursive-include src *.py *.json *.hndl
-recursive-include tests fresh95_runner_owner_check.py

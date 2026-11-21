@@ -14,17 +14,13 @@ def test_installed_distribution_contains_exact_runtime_and_data():
     resources = files("conceptmod.textsliders")
     manifest = json.loads(resources.joinpath("data/h3-extraction.json").read_text())
     assert manifest["source_commit"] == "fae34ef80f8ad0fbe02e5d9abc3c0e770798d5f7"
-    for record in manifest["sources"]:
-        name = record["destination_path"]
-        if not name.startswith("conceptmod/"):
-            continue
+    current = json.loads(resources.joinpath("data/h3-current-sources.json").read_text())
+    for name, expected in current.items():
         installed = Path(dist.locate_file(name))
         assert installed.is_file(), name
-        assert hashlib.sha256(installed.read_bytes()).hexdigest() == record.get("current_sha256", record["sha256"]), name
+        assert hashlib.sha256(installed.read_bytes()).hexdigest() == expected, name
     python_files = {str(p) for p in dist.files if str(p).endswith(".py")}
-    expected = {r["destination_path"] for r in manifest["sources"] if r["destination_path"].endswith(".py")
-                and r["destination_path"].startswith("conceptmod/")}
-    assert python_files == expected | {"conceptmod/textsliders/h3_cli.py"}
+    assert python_files == {name for name in current if name.endswith(".py")}
     assert not any(str(p).startswith(("particle_sliders/", "hypergan/", "hndl/")) for p in dist.files)
     assert set(resources.joinpath("data").iterdir()).issuperset(resources.joinpath("data", name) for name in
         ("pika-h3-flex-slider.hndl", "pika-h3-flex-critic.hndl", "pika-h3-flex-release.json", "pika-h3-flex-session.json"))
