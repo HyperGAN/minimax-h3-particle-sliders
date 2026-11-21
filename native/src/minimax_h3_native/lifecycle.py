@@ -8,7 +8,7 @@ from particle_sliders.inference import InferenceBackend,InferenceBinding,native_
 from particle_sliders.engine import ConditionalParticleGAN,engine_options
 from particle_sliders.restoration import _restore_all
 from .contracts import (BACKEND_NAME,SOURCE_PROFILE,PROTOCOL,INITIALIZATION_POLICY,WEIGHT_POLICY,
-    geometry,validate_options,validate_installed_core,rates)
+    FRESH_UNAVAILABLE,geometry,validate_options,validate_installed_core,rates)
 from .native import PikaH3FlexBackend
 from .adapter import H3ResponseAdapter,HNDLCritic,observe_native
 from .cache import CachedRows
@@ -27,11 +27,13 @@ def preflight(options,request,staged):
     c=staged.get('construction')
     from .contracts import digest
     if not isinstance(c,Construction)or c.options_sha256!=digest(options):raise ValueError('use open_training for explicit fresh/resume intent before prepare')
+    if c.mode == 'fresh':
+        raise UnsupportedOperation(FRESH_UNAVAILABLE)
     if request['native']:raise ValueError('training uses only its fixed original native cache')
 
 def prepare(options,*,construction=None):
     validate_options(options);validate_installed_core();preflight(options,{'native':{}},{'construction':construction})
-    runtime=PikaH3FlexBackend(options['snapshot'],device=options.get('device','cpu'));adapter=None
+    runtime=PikaH3FlexBackend(options['snapshot'],device=options.get('device','cuda:0'));adapter=None
     def close():_restore_all([*([adapter.close]if adapter is not None else[]),runtime.close])
     try:
         shape=geometry(options);rows=CachedRows(options['cache'],options['cache_sha256'],runtime,shape)
@@ -71,7 +73,7 @@ def preflight_inference(options,request,spec):
 
 def prepare_inference(options,spec):
     validate_inference(options,spec);validate_installed_core()
-    runtime=PikaH3FlexBackend(options['snapshot'],device=options.get('device','cpu'));adapter=None
+    runtime=PikaH3FlexBackend(options['snapshot'],device=options.get('device','cuda:0'));adapter=None
     def close():_restore_all([*([adapter.close]if adapter is not None else[]),runtime.close])
     try:
         shape=spec.configuration['geometry']

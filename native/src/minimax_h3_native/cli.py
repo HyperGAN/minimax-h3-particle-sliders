@@ -7,28 +7,23 @@ def main(argv=None):
     sub=parser.add_subparsers(dest='command',required=True);sub.add_parser('check')
     cache=sub.add_parser('cache')
     for key in('snapshot','pairs','output'):cache.add_argument('--'+key,required=True)
-    cache.add_argument('--device',default='cpu');cache.add_argument('--duration',type=int,default=5)
+    cache.add_argument('--device',default='cuda:0');cache.add_argument('--duration',type=int,default=5)
     cache.add_argument('--resolution',choices=('480p','768p'),default='480p');cache.add_argument('--seed',type=int,default=7)
     train=sub.add_parser('train')
     for key in('config','output'):train.add_argument('--'+key,required=True)
     train.add_argument('--resume');train.add_argument('--stop-after',type=int)
     render=sub.add_parser('render-pair')
     for key in('artifact','snapshot','output','prompt'):render.add_argument('--'+key,required=True)
-    render.add_argument('--device',default='cpu');render.add_argument('--seed',type=int,default=7);render.add_argument('--strength',type=float,default=1.)
+    render.add_argument('--device',default='cuda:0');render.add_argument('--seed',type=int,default=7);render.add_argument('--strength',type=float,default=1.)
     args=parser.parse_args(argv)
     if args.command=='check':
         from .contracts import BACKEND_NAME,CORE_REVISION,SOURCE_PROFILE,INITIALIZATION_POLICY,geometry
         print(json.dumps(dict(backend=BACKEND_NAME,core=CORE_REVISION,PG='0.11.0',source_profile=SOURCE_PROFILE,
             initialization=INITIALIZATION_POLICY,response_shapes=[geometry({'resolution':r})['response_shape']for r in('480p','768p')],
             selection='raw',ema_decay=None,bank=None,qualification='UNRUN'),indent=2));return
-    if args.command=='cache':
-        from .contracts import validate_installed_core
-        validate_installed_core()
-        from .native import PikaH3FlexBackend
-        from .cache import prepare_cache
-        runtime=PikaH3FlexBackend(args.snapshot,device=args.device)
-        try:print(json.dumps(prepare_cache(runtime,json.loads(Path(args.pairs).read_text()),args.output,duration=args.duration,resolution=args.resolution,seed=args.seed),indent=2))
-        finally:runtime.close()
+    if args.command=='cache' or (args.command=='train' and args.resume is None):
+        from .contracts import FRESH_UNAVAILABLE
+        parser.error(FRESH_UNAVAILABLE)
     elif args.command=='train':
         from particle_sliders.lifecycle import SessionConfig
         from .lifecycle import open_training

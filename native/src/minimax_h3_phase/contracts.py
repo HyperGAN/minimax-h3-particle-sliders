@@ -7,6 +7,10 @@ SOURCE_PROFILE='h3-native-allCUDA-DiT24-26-refiner1-1-PG0-group5-sync-unwind-FF5
 PROTOCOL='h3-full-native-video-then-audio-velocity-raw-v1'
 INITIALIZATION_POLICY='h3-kaiming-sqrt5-QR-down-zero-UP-KEEP-HNDL-critic-v1'
 WEIGHT_POLICY='raw-no-weight-EMA'
+FRESH_UNAVAILABLE = (
+    'Fresh native H3 requires a qualified FP4 or smaller H3 derivative '
+    'and an explicit stock EMPF host. This BF16 source preserves the archival layout.'
+)
 RELEASE=json.loads((Path(__file__).with_name('data')/'pika-h3-flex-release.json').read_text())
 
 def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':'),allow_nan=False).encode()).hexdigest()
@@ -46,7 +50,7 @@ def validate_options(options,*,training=True):
     if training:allowed|={'cache','cache_sha256','duration','resolution','steps','batch','seed','ema_decay','pg_version','pg_source_profile','penalty_input_domain','source_profile','initialization_policy','lr','d_lr_mult','prior_lr_mult','checkpointing'}
     if set(options)-allowed:raise ValueError('unknown H3 options; no native shape/formula/weight-policy overrides')
     if not isinstance(options.get('snapshot'),str)or not Path(options['snapshot']).is_dir():raise ValueError('explicit locally staged exact Pika snapshot required')
-    if not re.fullmatch(r'cpu|cuda:[0-9]+',options.get('device','cpu'))or options.get('base_precision','bfloat16')!='bfloat16':raise ValueError('explicit native device, BF16 base and released FP32 VAE islands required')
+    if not re.fullmatch(r'cuda:[0-9]+',options.get('device','cuda:0'))or options.get('base_precision','bfloat16')!='bfloat16':raise ValueError('explicit CUDA device, BF16 base and released FP32 VAE islands required')
     if not isinstance(options.get('conditioning'),str)or not Path(options['conditioning']).is_file()or not re.fullmatch('[0-9a-f]{64}',options.get('conditioning_sha256','')):raise ValueError('explicit complete frozen phase text-conditioning artifact required')
     if options.get('device','cuda:0')!='cuda:0':raise ValueError('resident grouped profile fixes game/entry cuda:0 and blocks24..49 cuda:1')
     if training:

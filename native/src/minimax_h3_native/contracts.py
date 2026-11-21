@@ -7,6 +7,10 @@ SOURCE_PROFILE='h3-native-full-av-engine-adapter-only-v1'
 PROTOCOL='h3-full-native-video-then-audio-velocity-raw-v1'
 INITIALIZATION_POLICY='h3-kaiming-sqrt5-QR-down-zero-UP-KEEP-HNDL-critic-v1'
 WEIGHT_POLICY='raw-no-weight-EMA'
+FRESH_UNAVAILABLE = (
+    'Fresh native H3 requires a qualified FP4 or smaller H3 derivative '
+    'and an explicit stock EMPF host. This BF16 source preserves the archival layout.'
+)
 RELEASE=json.loads((Path(__file__).with_name('data')/'pika-h3-flex-release.json').read_text())
 
 def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':'),allow_nan=False).encode()).hexdigest()
@@ -46,7 +50,7 @@ def validate_options(options,*,training=True):
     if training:allowed|={'cache','cache_sha256','duration','resolution','steps','batch','seed','ema_decay','pg_version','pg_source_profile','penalty_input_domain','source_profile','initialization_policy','lr','d_lr_mult','prior_lr_mult','checkpointing'}
     if set(options)-allowed:raise ValueError('unknown H3 options; no native shape/formula/weight-policy overrides')
     if not isinstance(options.get('snapshot'),str)or not Path(options['snapshot']).is_dir():raise ValueError('explicit locally staged exact Pika snapshot required')
-    if not re.fullmatch(r'cpu|cuda:[0-9]+',options.get('device','cpu'))or options.get('base_precision','bfloat16')!='bfloat16':raise ValueError('explicit native device, BF16 base and released FP32 VAE islands required')
+    if not re.fullmatch(r'cuda:[0-9]+',options.get('device','cuda:0'))or options.get('base_precision','bfloat16')!='bfloat16':raise ValueError('explicit CUDA device, BF16 base and released FP32 VAE islands required')
     if training:
         if 'ema_decay'not in options or options['ema_decay']is not None:raise ValueError('explicit ema_decay=None required; weight EMA refused')
         if tuple(options.get(k)for k in('pg_version','pg_source_profile','penalty_input_domain','source_profile','initialization_policy'))!=('0.11.0','release-0.11.0','continuous',SOURCE_PROFILE,INITIALIZATION_POLICY):raise ValueError('explicit current full-vector continuous/fresh-initialization profile required')

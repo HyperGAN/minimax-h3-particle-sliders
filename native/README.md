@@ -5,7 +5,9 @@ The standalone native packages pin Particle Sliders core 0.15.1 at
 The product preserves full native video and audio coordinates, the official
 optimizer, scoped initialization, and RAW state. CPU verification covers
 installed source admission and ownership. Native FP4 training and rendering
-on these pins remain pending.
+on these pins remain pending. The fresh training and cache commands refuse
+before model allocation. Fresh native work requires a separately qualified
+FP4 or smaller H3 derivative with an explicit stock EMPF host.
 
 Install this candidate in a separate environment.
 
@@ -54,7 +56,7 @@ until all owners close. Failed or foreign-replaced cleanup remains pending;
 the marker is removed last and `close()` can retry only pending owners. Repair
 foreign state through its owner; never overwrite it to manufacture a clean exit.
 
-## Training uses an already completed matching cache
+## Exact continuation uses an already completed matching cache
 
 Provide the complete original model snapshot, completed full text conditioning
 and a completed paired native teacher cache with their real hashes. Conditions
@@ -71,8 +73,8 @@ real external runner described above, and `config_dict` names genuine local
 completed artifacts. No executable dummy admission is supplied.
 
 ```python
-def train_saved_cache(admission, config_dict, full_path=None):
-    from minimax_h3_runner95 import Runner
+def resume_saved_cache(admission, config_dict, full_path):
+    from minimax_h3_runner import Runner
     with Runner(admission) as runner:
         from particle_sliders.lifecycle import SessionConfig
         config = SessionConfig.from_dict(config_dict)
@@ -84,9 +86,9 @@ def train_saved_cache(admission, config_dict, full_path=None):
             session.train(on_step=save)
 ```
 
-Choose a new cohort for genuinely fresh work and an unused output directory.
-The backend/profile/initialization strings in `session.example.json` are exact;
-replace only its local artifact paths/hashes and explicit requested recipe.
+For exact continuation, pass the original session config and FULL packet from
+the matching source cohort. The backend, profile, and initialization strings
+in `session.example.json` document the BF16 layout for inspection.
 The example G0.012 and D multiplier1.5 are the retained starting recipe,
 **not a measured recommendation**. They imply nominal D0.018000000000000002.
 There is no particle bank and no prior LR. Batch2, h128, seed7 and full five-second

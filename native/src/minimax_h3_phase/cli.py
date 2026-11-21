@@ -24,26 +24,9 @@ def main(argv=None):
         print(json.dumps(dict(backend=BACKEND_NAME,core=CORE_REVISION,PG='0.11.0',source_profile=SOURCE_PROFILE,
             initialization=INITIALIZATION_POLICY,response_shapes=[geometry({'resolution':r})['response_shape']for r in('480p','768p')],
             selection='raw',ema_decay=None,bank=None,qualification='UNRUN'),indent=2));return
-    if args.command=='cache':
-        from .contracts import validate_installed_core
-        from .placement import Placement
-        Placement().validate()
-        validate_installed_core()
-        from .native import PikaH3FlexBackend
-        from .cache import prepare_cache
-        from .contracts import validate_rows,record
-        from .conditioning import ValidatedSnapshot,encode_conditioning,Conditions
-        pairs=json.loads(Path(args.pairs).read_text());validate_rows(pairs)
-        source=ValidatedSnapshot(args.snapshot)
-        path=Path(args.output).with_name(Path(args.output).name+'.conditioning.pt')
-        if path.exists():
-            condition=record(path);saved=Conditions(path,condition['sha256'])
-            if set(saved.values)!={p for row in pairs for p in row.values()}:raise ValueError('existing conditioning has another frozen prompt cohort')
-        else:
-            condition=encode_conditioning(args.snapshot,[p for row in pairs for p in row.values()],path,source=source)
-        runtime=PikaH3FlexBackend(args.snapshot,device=args.device,conditioning=condition['path'],conditioning_sha256=condition['sha256'],source=source)
-        try:print(json.dumps(prepare_cache(runtime,pairs,args.output,duration=args.duration,resolution=args.resolution,seed=args.seed),indent=2))
-        finally:runtime.close()
+    if args.command=='cache' or (args.command=='train' and args.resume is None):
+        from .contracts import FRESH_UNAVAILABLE
+        parser.error(FRESH_UNAVAILABLE)
     elif args.command=='train':
         from particle_sliders.lifecycle import SessionConfig
         from .lifecycle import open_training

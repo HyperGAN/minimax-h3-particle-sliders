@@ -8,7 +8,7 @@ from particle_sliders.inference import InferenceBackend,InferenceBinding,native_
 from particle_sliders.engine import ConditionalParticleGAN,engine_options
 from particle_sliders.restoration import _restore_all
 from .contracts import (BACKEND_NAME,SOURCE_PROFILE,PROTOCOL,INITIALIZATION_POLICY,WEIGHT_POLICY,
-    geometry,validate_options,validate_installed_core,rates)
+    FRESH_UNAVAILABLE,geometry,validate_options,validate_installed_core,rates)
 from .native import PikaH3FlexBackend
 from .adapter import H3ResponseAdapter,observe_native
 from .bounded_critic import HNDLCritic
@@ -28,6 +28,8 @@ def preflight(options,request,staged):
     c=staged.get('construction')
     from .contracts import digest
     if not isinstance(c,Construction)or c.options_sha256!=digest(options):raise ValueError('use open_training for explicit fresh/resume intent before prepare')
+    if c.mode == 'fresh':
+        raise UnsupportedOperation(FRESH_UNAVAILABLE)
     if request['native']:raise ValueError('training uses only its fixed original native cache')
 
 def prepare(options,*,construction=None):
