@@ -62,10 +62,9 @@
     "weight_policy.py": "a254493817f7b9b259d1c1defcb7eb967a2bcf9ca776e68a92e09a24dffac29a"
   },
   "core_version": "0.15.2",
-  "core_wheel_sha256": "22e47ced4af8cb874d818db2f4006738f5f978cfcff324693931b6ab23f21c8a",
   "hndl": "0.10.0",
   "hypergan_revision": "5f368a3770cf5bdae0448995c9f76e29af8049f7",
-  "particlegan": "0.9.4",
-  "qualification": "Reviewed shared software cohort with bounded synthetic core CUDA evidence supplied by coordinator; H3 consumer CPU qualification only. No native wide H3, pretrained, GPU, media, quantized or model-quality qualification.",
-  "source_closure": "Exact complete 50-file particle_sliders package tree from the reviewed Git commit; no extra source or resource files admitted"
+  "particlegan": "0.11.1",
+  "qualification": "Installed CPU lifecycle and source admission checks.",
+  "source_closure": "Exact installed particle_sliders file inventory and hashes."
 }

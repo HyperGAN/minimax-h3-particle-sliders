@@ -277,7 +277,7 @@ def test_foreign_pg_profile_refuses_restore_atomically():
     with open_fixture(config) as receiver:
         receiver.train(stop_after=1)
         packet = receiver.checkpoint()
-        packet["payload"]["game"]["config"]["pg_source_profile"] = "release-0.9.3"
+        packet["payload"]["game"]["config"]["pg_source_profile"] = "release-unverified"
         packet["sha256"] = _hash({k: v for k, v in packet.items() if k != "sha256"})
         def refuse():
             with pytest.raises(CheckpointError) as caught:
