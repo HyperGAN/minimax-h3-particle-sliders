@@ -53,7 +53,7 @@ def _builder():
     require_shared_runtime()
     # Reuse the common verified builder gate, currently owned by this shared
     # module. It verifies HG build provenance and the complete HNDL source set.
-    from particle_sliders.fibo_hndl import verified_builder
+    from .fibo_hndl import verified_builder
     return verified_builder()
 
 
@@ -185,9 +185,9 @@ class PreparedPair:
 
 class H3ResponseAdapter:
     def __init__(self, runtime, shape, *, model_identity, checkpointing=False):
-        from particle_sliders.pg09 import validate_pg09_domain, PG_SOURCE_PROFILE
-        from particle_sliders.pg09_backends import AdapterParameters, checkpoint_with_adapter_scale
-        self.domain_gate = validate_pg09_domain(shape, response_domain="continuous_vector",
+        from particle_sliders.engine import validate_engine_domain, PG_SOURCE_PROFILE
+        from particle_sliders.backends import AdapterParameters, checkpoint_with_adapter_scale
+        self.domain_gate = validate_engine_domain(shape, response_domain="continuous_vector",
                                                 pg_source_profile=PG_SOURCE_PROFILE, penalty_input_domain="auto")
         self.runtime, self.response_shape = runtime, tuple(shape)
         self.model_identity = deepcopy(model_identity)
@@ -279,7 +279,7 @@ def observe_native(runtime):
 
 def bind(runtime, pairs, *, options, model_identity, shape):
     """Construct the real shared game; this contains no alternate objective."""
-    from particle_sliders.pg09 import ConditionalPG09
+    from particle_sliders.engine import ConditionalParticleGAN
     from particle_sliders.lifecycle import Binding
     adapter = None
     closed = False
@@ -301,7 +301,7 @@ def bind(runtime, pairs, *, options, model_identity, shape):
         rows = tuple(adapter.prepare(pair) for pair in pairs)
         conditions = torch.eye(len(rows), device=runtime.device)
         critic = HNDLCritic(shape[1], len(rows)).to(runtime.device)
-        game = ConditionalPG09(adapter, rows, critic, conditions=conditions, particles=None,
+        game = ConditionalParticleGAN(adapter, rows, critic, conditions=conditions, particles=None,
             response_domain="continuous_vector", preset=options.get("preset", "bispf_optimized"),
             batch_size=options.get("batch", 2), total_steps=options.get("steps", 4), seed=options.get("seed", 7))
         return Binding(game, close, observation=lambda: observe_native(runtime))
@@ -379,7 +379,7 @@ def prepare_native(options):
 def response_backend():
     require_shared_runtime()
     from particle_sliders.response import ResponseBackend, ResponseCapabilities
-    from particle_sliders.pg09 import PG_VERSION, PG_SOURCE_PROFILE
+    from particle_sliders.engine import PG_VERSION, PG_SOURCE_PROFILE
     def capabilities(options):
         return ResponseCapabilities("adapter_gan", "video_audio", "native_packed_av_velocity", "continuous_vector",
             native_response_shape(options), PG_VERSION, PG_SOURCE_PROFILE, base_precisions=("bfloat16",),

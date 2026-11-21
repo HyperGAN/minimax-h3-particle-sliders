@@ -232,9 +232,9 @@ def admit_shared_gan(response_shape):
     A packed audio/video velocity is a vector. Do not manufacture an image,
     truncate the response, or opt into a categorical profile to admit it.
     """
-    from particle_sliders.pg09 import PG_SOURCE_PROFILE, validate_pg09_domain
+    from particle_sliders.engine import PG_SOURCE_PROFILE, validate_engine_domain
 
-    return validate_pg09_domain(tuple(response_shape), response_domain="continuous_vector",
+    return validate_engine_domain(tuple(response_shape), response_domain="continuous_vector",
                                 pg_source_profile=PG_SOURCE_PROFILE, penalty_input_domain="auto")
 
 

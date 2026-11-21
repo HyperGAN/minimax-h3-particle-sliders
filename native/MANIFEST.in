@@ -1,0 +1,3 @@
+include README.md NOTICE.md session.example.json
+recursive-include src *.py *.json *.hndl
+include tests/runner_owner_check.py tests/native_admission_check.py

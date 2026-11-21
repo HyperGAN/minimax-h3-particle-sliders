@@ -25,12 +25,12 @@ universal maximum for arbitrary inputs. These calculations start no model jobs.
 Public native95 is the original Pika AV profile, not the new H3 image model.
 It uses `Pika-Labs/Pika-H3-Flex@3ff166447d5edb1406107ab8370c42000ce173e4`,
 the full original MiniMax transformer plus a frozen rank128 Pika release adapter.
-The [public runner profile](native95/src/minimax_h3_runner95/profile.json)
+The [public runner profile](https://github.com/HyperGAN/minimax-h3-particle-sliders/blob/043f8c89ca6425f2f6eec05d24138572e3e19bc1/native95/src/minimax_h3_runner95/profile.json)
 pins saved24/26 main blocks, refiner1/1, GPU0 game, group5 recomputation,
 FF512 and row512. It is explicitly hardware-specific, not a portable automatic map.
-See [native contracts](native95/src/minimax_h3_phase95/contracts.py),
-[release geometry/asset metadata](native95/src/minimax_h3_phase95/data/pika-h3-flex-release.json)
-and [model-file identity](native95/src/minimax_h3_phase95/model-files.json).
+See [native contracts](https://github.com/HyperGAN/minimax-h3-particle-sliders/blob/043f8c89ca6425f2f6eec05d24138572e3e19bc1/native95/src/minimax_h3_phase95/contracts.py),
+[release geometry/asset metadata](https://github.com/HyperGAN/minimax-h3-particle-sliders/blob/043f8c89ca6425f2f6eec05d24138572e3e19bc1/native95/src/minimax_h3_phase95/data/pika-h3-flex-release.json)
+and [model-file identity](https://github.com/HyperGAN/minimax-h3-particle-sliders/blob/043f8c89ca6425f2f6eec05d24138572e3e19bc1/native95/src/minimax_h3_phase95/model-files.json).
 
 The separately authored November13 FP4 cohort is **not shipped in this public
 profile**; it uses the same complete architecture/fixed Pika with a new quantized
@@ -50,7 +50,7 @@ above remains a calculated budget, not a claim that its full update fit was prov
   not a claim the public saved profile changed to25/25.
 * PG adapter is ordinary rank8 HNDL on208 attention hosts, 20,873,216 scalars,
   **no particle bank**. The default full1398528-coordinate critic's
-  source [bounded critic](native95/src/minimax_h3_phase95/bounded_critic.py)
+  source [bounded critic](https://github.com/HyperGAN/minimax-h3-particle-sliders/blob/043f8c89ca6425f2f6eec05d24138572e3e19bc1/native95/src/minimax_h3_phase95/bounded_critic.py)
   uses `(1398528+2)→16→1`, giving exactly 22,376,513 parameters.
   FP32 training/update envelope is 3.222 GiB onGPU0. Frozen Pika
   receives neither gradients nor optimizer state. Its2.577 GiB source adapter
@@ -101,7 +101,7 @@ qualification gate for historical results or a requirement to replay old work.
 
 Training figures freeze pretrained weights, use RAW current adapters and explicitly
 disable weight EMA. They include no full-base gradients or EMA shadow model.
-The PG 0.9.5 `bispf_optimized` recipe uses zero-momentum DualNorm, not Adam's two
+The captured `bispf_optimized` recipe uses zero-momentum DualNorm, not Adam's two
 full-size moment tensors. Its direction blend still retains protected gradients,
 clones originals/displacements, and converts up to two protected normals to
 FP64. For a conservative planning allowance, the tables reserve **80 bytes per
@@ -110,9 +110,9 @@ and 56 for protected FP32 gradients, FP32/FP64 direction/projection/polar,
 rollback and serialization temporaries. This is an explicit allowance, not a claim
 that every temporary is simultaneously allocated or that it is an exact peak.
 Small scalar optimizer statistics remain enabled. Recipe changes need a new ledger.
-See released [PG 0.9.5 recipes](https://github.com/255BITS/ParticleGAN/blob/v0.9.5/particlegan/recipes.py),
-[DualNorm](https://github.com/255BITS/ParticleGAN/blob/v0.9.5/particlegan/optim/dualnorm.py)
-and [direction blend](https://github.com/255BITS/ParticleGAN/blob/v0.9.5/particlegan/optim/direction_blend.py).
+See the original [ParticleGAN recipes](https://github.com/255BITS/ParticleGAN/blob/1b8355b184b21bb7d81104ee590813c262f6df0a/particlegan/recipes.py),
+[DualNorm](https://github.com/255BITS/ParticleGAN/blob/1b8355b184b21bb7d81104ee590813c262f6df0a/particlegan/optim/dualnorm.py)
+and [direction blend](https://github.com/255BITS/ParticleGAN/blob/1b8355b184b21bb7d81104ee590813c262f6df0a/particlegan/optim/direction_blend.py).
 
 Activation entries below are architecture-based envelopes. Fused/memory-efficient
 SDPA is assumed for the pretrained model; a math attention fallback that materializes

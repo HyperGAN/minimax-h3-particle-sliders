@@ -1,0 +1,21 @@
+{
+  "checked_api_files": {
+    "backends.py": "383ff6ea3d8ceedbda1c3ff881a41a14c9f5c023188f684d2016206e13ef7256",
+    "engine.py": "319653b84699d53a07af7cfff795b2887ba38029dd914aaf905a0ee094a594df",
+    "field_critic.py": "4fbff8f1a01497f43c4b50b116a69bde5b01a6aeff6bb63d4e0c9418e69f39d1",
+    "inference.py": "5ba3cfa3df3a3afce0b7b4d9b011ffa2b8585b48b531c36c3122d7983231ddbe",
+    "initialization.py": "f749dadc1ccb776dc4aac577f8e3098c98a1909f72ff03c9972f42a51762c333",
+    "lifecycle.py": "e2b08a36b30eac08505d19b0d22e9aefd226b91893b3ddaf950d94cc8f6c1546",
+    "response.py": "30f1b68f70828ca28c96948d01044cd983fe54688d6fc7309f37f6e1be1b1352",
+    "restoration.py": "447352d536d3da81d4035a6f5859ad7b05f0b2abbe9275c5b69faaf080cb7472",
+    "routed_projection.py": "d71e032c1a578e7fdc0494b3d43b982b3b4afdbc4ba859f21f75e2118c347e04",
+    "weight_policy.py": "a254493817f7b9b259d1c1defcb7eb967a2bcf9ca776e68a92e09a24dffac29a"
+  },
+  "commit": "ec1161f5d74481be3540cb0dfa63d0e8f8b54e90",
+  "distribution": "particle-sliders-core",
+  "particlegan": "0.11.1",
+  "repository": "https://github.com/HyperGAN/particle-sliders",
+  "reviewed_source_head": "ec1161f5d74481be3540cb0dfa63d0e8f8b54e90",
+  "source_profile": "h3-native-full-av-engine-adapter-only-v1",
+  "version": "0.15.2"
+}

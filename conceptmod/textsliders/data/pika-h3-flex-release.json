@@ -110,11 +110,10 @@
   },
   "core": {
     "repository": "HyperGAN/particle-sliders",
-    "revision": "3c25f785d14073e6f627c0fa9d2297a041c79913",
-    "version": "0.11.0",
-    "particlegan": "0.9.3",
-    "latest_pypi_particlegan": "0.9.4",
-    "status": "preserve exact released core profile; wide native vector admission blocked"
+    "revision": "ec1161f5d74481be3540cb0dfa63d0e8f8b54e90",
+    "version": "0.15.2",
+    "particlegan": "0.11.1",
+    "configuration_archive": "https://github.com/HyperGAN/minimax-h3-particle-sliders/tree/043f8c89ca6425f2f6eec05d24138572e3e19bc1"
   },
   "hypergan_develop": {
     "revision": "5f368a3770cf5bdae0448995c9f76e29af8049f7",

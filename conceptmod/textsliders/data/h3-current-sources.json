@@ -1,0 +1,23 @@
+{
+  "conceptmod/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "conceptmod/textsliders/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "conceptmod/textsliders/data/config-minimax-h3-chiaroscuro.yaml": "4a61295dfb881ba90ae9a7de3762a779fe053ed17ce9a515d47859cb583e7e90",
+  "conceptmod/textsliders/data/config-minimax-h3.yaml": "58f75b2748bbddb4e54a6ceacc7b55ec7626eefee0aba69d1b15f9f57d966cd6",
+  "conceptmod/textsliders/data/pika-h3-flex-critic.hndl": "db58a4e586cb5521eef362f0302f9821eeb646fcc5c1fcc04762b97996ed3764",
+  "conceptmod/textsliders/data/pika-h3-flex-release.json": "691ceed53156e571af65d86b9437de4f40aa7608a03434519c68091ab18c77de",
+  "conceptmod/textsliders/data/pika-h3-flex-session.json": "099ec93feda4f20cd5055b924b52a78c115a8741ac910af15b1bcfbc6c05f2eb",
+  "conceptmod/textsliders/data/pika-h3-flex-slider.hndl": "e32094eb55b9178e8c42d7bf483a5915593d5fe6ae3cbca7478559cf80f8dc4c",
+  "conceptmod/textsliders/data/prompts-minimax-h3-chiaroscuro.yaml": "0ce05b8da49c94984b8f3266223229b9f9baccf19ac77269f1e73c24dafa4d80",
+  "conceptmod/textsliders/data/prompts-minimax-h3.yaml": "05fe2ebee11873c3df00683fc0705c6064d9fbdab254bd0ac5f422cf9f5b7d4b",
+  "conceptmod/textsliders/diag_minimax_h3_uni.py": "f1e534033d25a67d3476499cace3f785168e40fd80a05195a3fe54c63996df18",
+  "conceptmod/textsliders/fibo_critic.hndl": "31f95ccf2178363d7a027597a00694c571c9d69a170151fcbe36e05326ac4707",
+  "conceptmod/textsliders/fibo_hndl.py": "5477c09bb02a8e970debf2089472b0f48f7ea62628f75c02e4ad638fa09e3b67",
+  "conceptmod/textsliders/fibo_hndl_010_sources.json": "861354b1d493bfbbfd01bd05ef6faed80e5b2d712b5797772e4a709f05597105",
+  "conceptmod/textsliders/fibo_projection.hndl": "b5efac1cfb0c597e5d6e0839af6077ff36dec916901bfa254be78db9f691c086",
+  "conceptmod/textsliders/h3_cli.py": "757f51868d739f2c1d9d17893ae6cbf07b655438ff1be2efa8ef51a7d2c7aed3",
+  "conceptmod/textsliders/minimax_h3_backend.py": "16aec7c6ff8e0fbdb18dbc214349959ee2f8399bfbb80a5aa5cbe8113d2aa703",
+  "conceptmod/textsliders/minimax_h3_uni.py": "fd63821a82444243e275ac99a600ad9d642fa38606761201592b6266c22fac8f",
+  "conceptmod/textsliders/pika_h3_flex.py": "d58c8e17cfabadbd0420d460ecc953183db775a4a36c95bfb77dccc9b299ad64",
+  "conceptmod/textsliders/pika_h3_flex_session.py": "8f8cd884b17bbabae6723a2b332bf0aedf99538e2f0769bd3efa5129fd81cf60",
+  "conceptmod/textsliders/train_lora_minimax_h3.py": "f4fc488639604daf58c4b9819df66b80e1803b45e5386d0a12d86f2df8752c91"
+}

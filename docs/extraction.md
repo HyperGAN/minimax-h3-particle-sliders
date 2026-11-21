@@ -65,7 +65,7 @@ exact original runtime hashes, entry points, fixed Pika isolation, native geomet
 official refusal, shared CPU updates, checkpoint/resume, raw/EMA export and atomic
 mismatch refusals are exercised. Neither test lane downloads or loads weights.
 
-`tools/verify_original_cohort.py` produces and verifies **random miniature**
+The [original verification tool](https://github.com/HyperGAN/minimax-h3-particle-sliders/blob/043f8c89ca6425f2f6eec05d24138572e3e19bc1/tools/verify_original_cohort.py) produces and verifies **random miniature**
 fixtures between original and installed processes, including raw/EMA responses
 and exact resumed parameters/signatures with checkpointing off/on. Generated
 fixture payloads stay outside this repository and are excluded from all artifacts.
@@ -90,7 +90,7 @@ The optional dependency URL pins that commit. The lock now includes all 50
 package files, verified against the exact reviewed core Git tree and wheel
 SHA256 `22e47ced4af8cb874d818db2f4006738f5f978cfcff324693931b6ab23f21c8a`.
 Changed, missing or extra files fail admission; normal bytecode caches are ignored.
-PG0.9.4, HyperGAN5f368a, HNDL0.10, model/runtime pins, loss, bank, native
+The original ParticleGAN pin, HyperGAN5f368a, HNDL0.10, model/runtime pins, loss, bank, native
 geometry, fixed Pika behavior and quantization status are unchanged.
 
 This intentionally changes the session-guard source and shared dependency/cohort

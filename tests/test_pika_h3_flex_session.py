@@ -17,8 +17,8 @@ try:
     core_version = version("particle-sliders-core")
 except PackageNotFoundError:
     pytest.skip("shared H3 fixture requires installed particle-sliders-core distribution metadata", allow_module_level=True)
-if core_version != "0.12.0":
-    pytest.skip("shared H3 fixture requires reviewed core0.12.0; installed version is " + core_version, allow_module_level=True)
+if core_version != "0.15.2":
+    pytest.skip("shared H3 fixture requires reviewed core0.15.2; installed version is " + core_version, allow_module_level=True)
 diffusers = pytest.importorskip("diffusers", reason="shared H3 fixture requires Pika-native Diffusers")
 pytest.importorskip("peft", reason="shared H3 fixture requires PEFT for its frozen companion adapter")
 if not hasattr(diffusers, "PikaH3FlexModularPipeline"):
@@ -29,7 +29,7 @@ from conceptmod.textsliders.pika_h3_flex import PIKA_ADAPTER
 from conceptmod.textsliders.minimax_h3_backend import PackedLayout
 from particle_sliders.lifecycle import SessionConfig, Binding, _open_registered, CheckpointError
 from particle_sliders.response import ResponseBackend, ResponseCapabilities, TRAINING, INFERENCE
-from particle_sliders.pg09 import _hash, PG_VERSION, PG_SOURCE_PROFILE
+from particle_sliders.engine import _hash, PG_VERSION, PG_SOURCE_PROFILE
 
 
 def fixture_runtime(seed=7):
@@ -99,7 +99,7 @@ def test_native_preflight_uses_actual_shape_and_refuses_before_loader(monkeypatc
                                                   {"neutral": "a room", "positive": "a bright room"}])
     assert h3.native_response_shape(options) == (1, 1398528)
     config = SessionConfig(h3.NAME, "unqualified-native", **options)
-    with pytest.raises(ValueError, match="released PG09 cannot admit flat continuous vectors with width >=170"):
+    with pytest.raises(ValueError, match="released ParticleGAN auto dispatch cannot admit flat continuous vectors with width >=170"):
         h3.open_session(config)
     assert called == []
     for override in ("width", "response_shape", "dummy", "penalty_input_domain", "pg_source_profile"):
@@ -324,7 +324,7 @@ def test_bfloat16_native_host_keeps_hndl_leaves_float32():
 
 @pytest.mark.parametrize("checkpointing", [False, True])
 def test_real_shared_game_updates_hndl_leaves_only_and_preserves_pika(checkpointing):
-    config = SessionConfig(FIXTURE.name, "random-software-v1", seed=7, steps=2, batch=2, checkpointing=checkpointing, ema_decay=0.5)
+    config = SessionConfig(FIXTURE.name, "random-software-v1", seed=7, steps=2, batch=2, checkpointing=checkpointing, ema_decay=None)
     with open_fixture(config) as session:
         runtime = session.game.backend.runtime
         base = {name: value.detach().clone() for name, value in runtime.transformer.named_parameters()}
@@ -340,13 +340,13 @@ def test_real_shared_game_updates_hndl_leaves_only_and_preserves_pika(checkpoint
             with runtime.scaled(strength):
                 assert all(layer.scaling[PIKA_ADAPTER] == 1 for layer in runtime._release_layers.values())
         runtime._check_fixed_pika()
-        assert session.manifest["game_signature"]["pg_version"] == "0.9.4"
+        assert session.manifest["game_signature"]["pg_version"] == "0.11.1"
         assert session.manifest["capabilities"]["generator_arm"] == "adapter_gan"
 
 
 @pytest.mark.parametrize("checkpointing", [False, True])
 def test_shared_checkpoint_resume_export_and_observation_are_exact(tmp_path, checkpointing):
-    config = SessionConfig(FIXTURE.name, "random-exact-resume-v1", seed=7, steps=4, batch=2, ema_decay=0.5, checkpointing=checkpointing)
+    config = SessionConfig(FIXTURE.name, "random-exact-resume-v1", seed=7, steps=4, batch=2, ema_decay=None, checkpointing=checkpointing)
     checkpoint = tmp_path / "training.pt"
     artifact = tmp_path / "adapter.pt"
     with open_fixture(config) as uninterrupted:
@@ -365,6 +365,6 @@ def test_shared_checkpoint_resume_export_and_observation_are_exact(tmp_path, che
         result = second.evaluate(0, seed=19)
     with open_fixture(config, artifact=artifact, operation="response") as inference:
         torch.testing.assert_close(inference.evaluate(0, seed=19), result, rtol=0, atol=0)
-    wrong = SessionConfig(FIXTURE.name, "different-cohort", seed=7, steps=4, batch=2, ema_decay=0.5, checkpointing=checkpointing)
+    wrong = SessionConfig(FIXTURE.name, "different-cohort", seed=7, steps=4, batch=2, ema_decay=None, checkpointing=checkpointing)
     with pytest.raises(CheckpointError, match="cohort"):
         open_fixture(wrong, resume=checkpoint)
