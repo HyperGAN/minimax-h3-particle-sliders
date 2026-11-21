@@ -171,3 +171,57 @@ gain. Return the resulting latent pair to the same FP4 runner's native
 decoders. This extension can be imported from this checkout beside the
 frozen FP4 environment. Effective strengths must be in `[0,1]`.
 Pretrained scheduled audiovisual effects are pending.
+
+### Calibrated activation gating
+
+An `AVGatePlan` selects one common RAW strength for both modalities before
+that interval's native transformer call. The original text-to-AV path is
+single-conditional. The gate reads the packed `hidden_states` and
+`audio_hidden_states` before the edit, averages their rows in FP32, and
+concatenates the video channel means followed by the audio channel means.
+It checks both native solver cursors and each modality's packed row times.
+
+Build the shared core wheel at revision
+[`b1f780de`](https://github.com/HyperGAN/particle-sliders/commit/b1f780decc516808cfd3019d5e5b674457161f86).
+Give its path to the gate plan alongside the original FP4 environment. The
+facade verifies and loads only the standalone steering module from the wheel.
+The captured runtime, adapter and checkpoint source pins keep their original
+identities. Use a fitted unit direction and the threshold or bias from a
+calibration record for this joint readout, exact FP4 cohort and slider.
+
+```python
+from minimax_h3_scheduling import render_latents
+from minimax_h3_scheduling.activation_gate import AVGatePlan
+
+plan = AVGatePlan(
+    core_wheel=reviewed_core_wheel,
+    method="cfp",
+    direction=fitted_joint_direction,
+    parameter=calibrated_threshold,
+    calibration_sha256=calibration_record_sha256,
+)
+latents, trace = render_latents(
+    raw_session, prompt=prompt, seed=seed, strength=qualified_strength,
+    gate_plan=plan,
+)
+```
+
+For CLABS, supply `method="clabs"`, the calibrated bias as `parameter`,
+`clabs` with the measured projection statistics and explicit controller fields,
+and a gate `seed`. For the matched random control, provide `method="random"`,
+its matched firing rate as `parameter` and a gate `seed`. This control takes
+no direction. The gate state resets for each render. The trace records both
+native sigma grids, the decisions, the realized firing rate, the applied
+strengths and the sigma-integrated dose for each modality. With the same
+prompt, RAW checkpoint, nominal strength and native seed, replay with
+`step_gains=[value / qualified_strength for value in trace["effective_strengths"]]`.
+
+Fit the direction from paired native readouts in matching geometry and on the
+same FP4 model. Calibrate the firing rate using separate active rollouts.
+Compare decoded, complete audiovisual outputs on a disjoint held-out set with
+native OFF and constant-strength RAW, and record the applied gains separately
+from the intended-effect and integrity checks. The latent return is internal
+to the existing native decoders. There is no qualified H3 AV direction, gate
+calibration, or measured adaptive gain for the pruned Warm Sunset cohort.
+The captured pruned FP4 timing panel did not reach its required RAW8 checkpoint.
+See [the shared steering and calibration protocol](https://github.com/HyperGAN/particle-sliders/blob/b1f780decc516808cfd3019d5e5b674457161f86/docs/strength-schedules.md#activation-dependent-steering).
