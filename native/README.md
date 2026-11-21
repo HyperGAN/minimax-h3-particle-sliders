@@ -14,7 +14,7 @@ Install this candidate in a separate environment.
     python -m pip install ./native
 
 The captured BF16 work uses the previous exact code, optimizer and runtime.
-The [archived runner profile](validation/runner-profile-20261111.json) records
+The [archived runner profile](https://github.com/HyperGAN/minimax-h3-particle-sliders/blob/043f8c89ca6425f2f6eec05d24138572e3e19bc1/native95/src/minimax_h3_runner95/profile.json) records
 that cohort. The following runner notes describe the captured placement and
 resource contracts. Fresh work requires the separate FP4 or smaller H3
 derivative and new provenance. Existing FULL and RAW files retain their
