@@ -160,3 +160,14 @@ proposal creates no new qualification, confirmation or calibration gate.
 ## Installed runner software checks
 
 All four new cases in `tests/runner_owner_check.py` passed on 2026-11-11 against the genuine offline-built and installed wheel. They cover actual temporary-file flock modes and identity, policy refusal, foreign-marker/pending cleanup retry, and exact-once delegation to the original training methods. The run used a neutral directory, exact installed Source/RECORD checks and no source `PYTHONPATH`. See the [software validation record](validation/installed-owner-api-20261111.json). No GPU, pretrained model or optimizer work was performed. Full-native execution through the public wheel and the H3 LR comparison remain unverified.
+
+## Scheduled audiovisual denoising on an owned FP4 session
+
+For the separate original FP4 runner, use the `minimax_h3_scheduling`
+extension with an already-opened strict RAW session. Call
+`render_latents(session, prompt=prompt, seed=seed, step_gains=gains)` with
+six native gains. The coupled video and audio evaluations share the current
+gain. Return the resulting latent pair to the same FP4 runner's native
+decoders. This extension can be imported from this checkout beside the
+frozen FP4 environment. Effective strengths must be in `[0,1]`.
+Pretrained scheduled audiovisual effects are pending.
