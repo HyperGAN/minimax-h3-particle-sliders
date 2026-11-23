@@ -9,11 +9,14 @@ from sys import float_info
 NATIVE_STEPS = 6
 
 
-def _sample(runtime, complete_denoise, *, strengths=None, strength=None, gate_plan=None):
+def _sample(runtime, complete_denoise, *, strengths=None, strength=None, gate_plan=None, record_native_grids=False):
     position = 0
     steps = len(strengths) if gate_plan is None else NATIVE_STEPS
+    fixed_grid_capture = record_native_grids and gate_plan is None
+    capture_grids = fixed_grid_capture or gate_plan is not None
     timesteps = None
     schedulers = None
+    fixed_pipe = None
     sigma_grids = None
     decisions = []
     applied = []
@@ -23,20 +26,30 @@ def _sample(runtime, complete_denoise, *, strengths=None, strength=None, gate_pl
 
         gate = gate_plan._new_gate()
 
+    def fixed_grids_aligned(cursor):
+        if fixed_pipe.scheduler is not schedulers[0] or fixed_pipe.audio_scheduler is not schedulers[1]:
+            return False
+        return all(scheduler.step_index == cursor and scheduler.begin_index is None
+                   and scheduler.timesteps.tolist() == timesteps[f"{modality}_timesteps"]
+                   and scheduler.sigmas.tolist() == sigma_grids[f"{modality}_sigmas"]
+                   for modality, scheduler in zip(("video", "audio"), schedulers, strict=True))
+
     def before(_transformer, _args, kwargs):
-        nonlocal position, timesteps, schedulers, sigma_grids
+        nonlocal position, timesteps, schedulers, sigma_grids, fixed_pipe
         if position >= steps:
             raise RuntimeError("H3 FP4 made extra native denoiser evaluations")
         current = (runtime.pipe.scheduler, runtime.pipe.audio_scheduler)
         if timesteps is None:
             schedulers = current
+            if fixed_grid_capture:
+                fixed_pipe = runtime.pipe
             timesteps = {
                 "video_timesteps": current[0].timesteps.tolist(),
                 "audio_timesteps": current[1].timesteps.tolist(),
             }
             if any(len(values) != steps for values in timesteps.values()):
                 raise RuntimeError("H3 FP4 native audio/video solver grids differ from the request")
-            if gate_plan is not None:
+            if capture_grids:
                 sigma_grids = {
                     "video_sigmas": current[0].sigmas.tolist(),
                     "audio_sigmas": current[1].sigmas.tolist(),
@@ -44,11 +57,13 @@ def _sample(runtime, complete_denoise, *, strengths=None, strength=None, gate_pl
                 if any(len(grid) != steps + 1 or any(not isfinite(a) or not isfinite(b) or a <= b
                        for a, b in pairwise(grid)) for grid in sigma_grids.values()):
                     raise RuntimeError("H3 FP4 expected two complete native sigma grids")
+        if capture_grids and any(scheduler is not saved for scheduler, saved in zip(current, schedulers, strict=True)):
+            raise RuntimeError("H3 FP4 replaced a scheduler during the coupled native trajectory")
+        if fixed_grid_capture and not fixed_grids_aligned(position if position else None):
+            raise RuntimeError("H3 FP4 fixed trace lost native solver interval or grid alignment")
         if gate_plan is None:
             value = strengths[position]
         else:
-            if any(scheduler is not saved for scheduler, saved in zip(current, schedulers, strict=True)):
-                raise RuntimeError("H3 FP4 replaced a scheduler during the coupled native trajectory")
             video, audio = kwargs.get("hidden_states"), kwargs.get("audio_hidden_states")
             readout = coupled_latent_readout(video, audio)
             check_solver_interval(schedulers, position, kwargs, video, audio)
@@ -72,6 +87,10 @@ def _sample(runtime, complete_denoise, *, strengths=None, strength=None, gate_pl
     if position != steps:
         raise RuntimeError("H3 FP4 finished before evaluating every requested native interval")
     receipt = {**timesteps, "effective_strengths": applied}
+    if fixed_grid_capture:
+        if not fixed_grids_aligned(steps):
+            raise RuntimeError("Both H3 FP4 schedulers must complete every fixed interval on the recorded grids")
+        receipt.update(sigma_grids)
     if gate_plan is not None:
         if any(scheduler.step_index != steps for scheduler in schedulers):
             raise RuntimeError("Both H3 FP4 schedulers must complete every gated interval")
@@ -86,8 +105,8 @@ def _sample(runtime, complete_denoise, *, strengths=None, strength=None, gate_pl
     return result, receipt
 
 
-def render_latents(session, *, prompt, seed, step_gains=None, strength=1.0, gate_plan=None):
-    """Return original coupled latents and the fixed or gated native step trace."""
+def render_latents(session, *, prompt, seed, step_gains=None, strength=1.0, gate_plan=None, record_native_grids=False):
+    """Return coupled latents and the native step trace. Opt in to sigma grids for a fixed schedule."""
     from minimax_h3_fp4.native import FP4H3Backend
 
     session._open()
@@ -119,4 +138,25 @@ def render_latents(session, *, prompt, seed, step_gains=None, strength=1.0, gate
     strengths = [float(strength * gain) for gain in step_gains]
     if any(not 0 <= value <= 1 for value in strengths):
         raise ValueError("effective H3 FP4 strengths must be finite in [0,1]")
-    return _sample(runtime, denoise, strengths=strengths)
+    return _sample(runtime, denoise, strengths=strengths, record_native_grids=record_native_grids)
+
+
+def native_dose_residuals(fixed_trace, gated_trace, *, coefficient_format):
+    """Return fixed-minus-gated exact coefficient doses on matching native grids.
+
+    Use strengths already resolved at the measured scalar application boundary.
+    The offline verifier requires the shared core's ``interval_dose`` helper.
+    """
+    fields = ("video_timesteps", "audio_timesteps", "video_sigmas", "audio_sigmas")
+    if any(field not in fixed_trace or field not in gated_trace or fixed_trace[field] != gated_trace[field]
+           for field in fields):
+        raise ValueError("H3 FP4 dose comparison requires matching native video and audio grids")
+    from particle_sliders.strength_schedule import interval_dose
+
+    return {
+        modality: interval_dose(fixed_trace["effective_strengths"], fixed_trace[f"{modality}_sigmas"],
+                                coefficient_format=coefficient_format)
+        - interval_dose(gated_trace["effective_strengths"], gated_trace[f"{modality}_sigmas"],
+                        coefficient_format=coefficient_format)
+        for modality in ("video", "audio")
+    }

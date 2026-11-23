@@ -172,6 +172,37 @@ decoders. This extension can be imported from this checkout beside the
 frozen FP4 environment. Effective strengths must be in `[0,1]`.
 Pretrained scheduled audiovisual effects are pending.
 
+### Compare doses on both native clocks
+
+Set `record_native_grids=True` on a fixed `render_latents` call to record
+`video_sigmas` and `audio_sigmas` alongside the existing timesteps and
+`effective_strengths`. This verifies both scheduler cursors and grids during
+the fixed trajectory. Gated traces already carry both grids.
+
+To verify a matched fixed and gated pair offline, use the shared core's
+[`interval_dose`](https://github.com/HyperGAN/particle-sliders/blob/07dbd331c3a548709949032c01ce19e7c64a2520/packages/particle-sliders-core/src/particle_sliders/strength_schedule.py)
+from revision `07dbd331c3a548709949032c01ce19e7c64a2520`. The verifier
+requires identical video and audio timesteps and sigma grids across the two
+traces before integrating their resolved coefficients on each clock.
+
+```python
+from minimax_h3_scheduling import native_dose_residuals
+
+residuals = native_dose_residuals(
+    fixed_trace, gated_trace, coefficient_format=measured_scalar_format
+)
+assert all(residual == 0 for residual in residuals.values())
+```
+
+Pass the coefficient format confirmed for the exact native runtime. The
+captured pruned RAW2 runtime was verified at the float32 scalar boundary.
+For that runtime, use `coefficient_format="binary32"` with strengths that
+are already resolved at that boundary. The shared verifier rejects a
+coefficient that would still round to binary32. The signed residuals are
+fixed minus gated and use exact rational arithmetic. Verify zero separately
+for video and audio. This verifies scalar dose equality. Finished audiovisual
+effects require the matched native renders and observer.
+
 ### Calibrated activation gating
 
 An `AVGatePlan` selects one common RAW strength for both modalities before

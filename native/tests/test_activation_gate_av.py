@@ -2,6 +2,7 @@
 
 from contextlib import contextmanager
 from copy import deepcopy
+from fractions import Fraction
 from os import environ
 from pathlib import Path
 from sys import modules
@@ -11,7 +12,7 @@ from zipfile import ZipFile
 import pytest
 import torch
 
-from minimax_h3_scheduling import render_latents
+from minimax_h3_scheduling import native_dose_residuals, render_latents
 from minimax_h3_scheduling.activation_gate import AVGatePlan, CORE_MEMBER, coupled_latent_readout, gate_core
 
 
@@ -87,12 +88,18 @@ def native_raw(monkeypatch):
                     for i, time in enumerate(times):
                         if self.fault == "wrong_audio_time" and i == 1:
                             plan[i] = (plan[i][0], torch.zeros_like(plan[i][1]))
+                        if self.fault == "changed_audio_grid" and i == 1:
+                            self.pipe.audio_scheduler.sigmas[0] += .125
+                        if self.fault == "changed_audio_begin" and i == 1:
+                            self.pipe.audio_scheduler.set_begin_index(1)
                         denoiser(self.pipe, state, i, time)
                         if self.fault == "repeat_interval" and i == 0:
                             denoiser(self.pipe, state, i, time)
                         if self.fault == "unfinished" and i == len(times) - 1:
                             break
                         solver(self.pipe, state, i, time)
+                    if self.fault == "replaced_final_scheduler":
+                        self.pipe.audio_scheduler = deepcopy(self.pipe.audio_scheduler)
                     return state.latents, state.audio_latents
             finally:
                 self.pipe = original
@@ -116,6 +123,49 @@ def plan(core_wheel, **settings):
 
 def render(session, **kwargs):
     return render_latents(session, prompt="synthetic fixture", seed=7, strength=.5, **kwargs)
+
+
+def test_fixed_grid_capture_preserves_default_result(native_raw):
+    runtime, session = native_raw
+    gains = [1., 0., .5, 1., 0., .5]
+    default_result, default_trace = render(session, step_gains=gains)
+    result, trace = render(session, step_gains=gains, record_native_grids=True)
+    assert all(torch.equal(a, b) for a, b in zip(result, default_result, strict=True))
+    assert set(default_trace) == {"video_timesteps", "audio_timesteps", "effective_strengths"}
+    assert {key: trace[key] for key in default_trace} == default_trace
+    assert len(trace["video_sigmas"]) == len(trace["audio_sigmas"]) == 7
+    assert trace["video_sigmas"] != trace["audio_sigmas"]
+    assert runtime.transformer.strength == 0.0
+
+
+@pytest.mark.parametrize("fault", ["changed_audio_grid", "changed_audio_begin", "replaced_final_scheduler", "unfinished"])
+def test_fixed_grid_capture_rejects_unfaithful_trace_and_cleans_hooks(native_raw, fault):
+    runtime, session = native_raw
+    runtime.fault = fault
+    with pytest.raises(RuntimeError, match="fixed trace|complete every fixed interval"):
+        render(session, step_gains=[1.] * 6, record_native_grids=True)
+    assert runtime.transformer.strength == 0.0
+    assert not runtime.transformer._forward_pre_hooks
+    assert not runtime.transformer._forward_hooks
+
+
+def test_dose_comparison_requires_matching_runtime_grids():
+    fixed = {"video_timesteps": [6., 4.], "audio_timesteps": [5., 2.],
+             "video_sigmas": [1., .5, 0.], "audio_sigmas": [1., .75, 0.],
+             "effective_strengths": [.5, 0.]}
+    gated = dict(fixed, effective_strengths=[0., .5])
+    with pytest.raises(ValueError, match="matching native video and audio grids"):
+        native_dose_residuals(fixed, dict(gated, audio_sigmas=[1., .5, 0.]), coefficient_format="binary32")
+
+    schedule = pytest.importorskip("particle_sliders.strength_schedule")
+    if not hasattr(schedule, "interval_dose"):
+        pytest.skip("offline dose comparison requires the core interval_dose helper")
+    assert native_dose_residuals(fixed, fixed, coefficient_format="binary32") == {"video": 0, "audio": 0}
+    assert native_dose_residuals(fixed, gated, coefficient_format="binary32") == {
+        "video": 0, "audio": Fraction(-1, 4),
+    }
+    with pytest.raises(ValueError, match="resolved binary32"):
+        native_dose_residuals(dict(fixed, effective_strengths=[.1, 0.]), gated, coefficient_format="binary32")
 
 
 @pytest.mark.parametrize("rate", [0., 1.])
@@ -153,8 +203,11 @@ def test_live_joint_projection_and_fixed_replay(core_wheel, native_raw, method):
     scores = [float(readout @ direction) for readout in runtime.readouts]
     assert [record["projection"] for record in trace["decisions"]] == scores
     assert [record["interval"] for record in trace["decisions"]] == list(range(6))
-    actual_replay, _ = render(session, step_gains=[v / .5 for v in trace["effective_strengths"]])
+    actual_replay, fixed_trace = render(session, step_gains=[v / .5 for v in trace["effective_strengths"]],
+                                        record_native_grids=True)
     assert all(torch.equal(a, b) for a, b in zip(result, actual_replay, strict=True))
+    assert fixed_trace["video_sigmas"] == trace["video_sigmas"]
+    assert fixed_trace["audio_sigmas"] == trace["audio_sigmas"]
     rerun, repeat_trace = render(session, gate_plan=gate)
     assert trace == repeat_trace
     assert all(torch.equal(a, b) for a, b in zip(result, rerun, strict=True))
