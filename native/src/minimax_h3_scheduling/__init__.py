@@ -14,6 +14,7 @@ def _sample(runtime, complete_denoise, *, strengths=None, strength=None, gate_pl
     steps = len(strengths) if gate_plan is None else NATIVE_STEPS
     fixed_grid_capture = record_native_grids and gate_plan is None
     capture_grids = fixed_grid_capture or gate_plan is not None
+    original_schedulers = (runtime.pipe.scheduler, runtime.pipe.audio_scheduler) if fixed_grid_capture else None
     timesteps = None
     schedulers = None
     fixed_pipe = None
@@ -26,8 +27,10 @@ def _sample(runtime, complete_denoise, *, strengths=None, strength=None, gate_pl
 
         gate = gate_plan._new_gate()
 
-    def fixed_grids_aligned(cursor):
-        if fixed_pipe.scheduler is not schedulers[0] or fixed_pipe.audio_scheduler is not schedulers[1]:
+    def fixed_grids_aligned(cursor, *, allow_restored=False):
+        video, audio = fixed_pipe.scheduler, fixed_pipe.audio_scheduler
+        restored = allow_restored and video is original_schedulers[0] and audio is original_schedulers[1]
+        if not restored and (video is not schedulers[0] or audio is not schedulers[1]):
             return False
         return all(scheduler.step_index == cursor and scheduler.begin_index is None
                    and scheduler.timesteps.tolist() == timesteps[f"{modality}_timesteps"]
@@ -88,7 +91,8 @@ def _sample(runtime, complete_denoise, *, strengths=None, strength=None, gate_pl
         raise RuntimeError("H3 FP4 finished before evaluating every requested native interval")
     receipt = {**timesteps, "effective_strengths": applied}
     if fixed_grid_capture:
-        if not fixed_grids_aligned(steps):
+        # A resident owner may restore its original scheduler pair before returning.
+        if not fixed_grids_aligned(steps, allow_restored=True):
             raise RuntimeError("Both H3 FP4 schedulers must complete every fixed interval on the recorded grids")
         receipt.update(sigma_grids)
     if gate_plan is not None:

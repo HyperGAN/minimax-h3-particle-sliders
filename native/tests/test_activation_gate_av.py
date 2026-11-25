@@ -12,7 +12,7 @@ from zipfile import ZipFile
 import pytest
 import torch
 
-from minimax_h3_scheduling import native_dose_residuals, render_latents
+from minimax_h3_scheduling import _sample, native_dose_residuals, render_latents
 from minimax_h3_scheduling.activation_gate import AVGatePlan, CORE_MEMBER, coupled_latent_readout, gate_core
 
 
@@ -44,6 +44,7 @@ def native_raw(monkeypatch):
     class FP4H3Backend:
         identity = "fixture-only"
         fault = None
+        restore_schedulers_in_place = False
 
         def __init__(self):
             self.transformer = Transformer()
@@ -65,8 +66,13 @@ def native_raw(monkeypatch):
             self.readouts = []
             denoiser, solver = PikaH3FlexLoopDenoiser(), PikaH3FlexLoopSchedulerStep()
             original = self.pipe
-            self.pipe = SimpleNamespace(transformer=self.transformer, scheduler=deepcopy(original.scheduler),
-                                        audio_scheduler=deepcopy(original.audio_scheduler))
+            original_schedulers = original.scheduler, original.audio_scheduler
+            scheduler, audio_scheduler = map(deepcopy, original_schedulers)
+            if self.restore_schedulers_in_place:
+                original.scheduler, original.audio_scheduler = scheduler, audio_scheduler
+            else:
+                self.pipe = SimpleNamespace(transformer=self.transformer, scheduler=scheduler,
+                                            audio_scheduler=audio_scheduler)
             video_rows, audio_rows = torch.tensor([0, 1, 2]), torch.tensor([3, 4])
             layout = dict(video_indices=video_rows, audio_indices=audio_rows)
             try:
@@ -102,6 +108,8 @@ def native_raw(monkeypatch):
                         self.pipe.audio_scheduler = deepcopy(self.pipe.audio_scheduler)
                     return state.latents, state.audio_latents
             finally:
+                if self.restore_schedulers_in_place:
+                    original.scheduler, original.audio_scheduler = original_schedulers
                 self.pipe = original
 
     fixture_module = ModuleType("minimax_h3_fp4.native")
@@ -136,6 +144,32 @@ def test_fixed_grid_capture_preserves_default_result(native_raw):
     assert len(trace["video_sigmas"]) == len(trace["audio_sigmas"]) == 7
     assert trace["video_sigmas"] != trace["audio_sigmas"]
     assert runtime.transformer.strength == 0.0
+
+
+def test_fixed_grid_capture_after_in_place_scheduler_restoration(native_raw):
+    runtime, _ = native_raw
+    runtime.restore_schedulers_in_place = True
+    pipe = runtime.pipe
+    video, audio = pipe.scheduler, pipe.audio_scheduler
+    gains = [.5, 0., .25, .5, 0., .25]
+
+    def denoise():
+        return runtime.render(prompt="synthetic fixture", seed=7, strength=.5)
+
+    _, trace = _sample(runtime, denoise, strengths=gains, record_native_grids=True)
+    assert runtime.pipe is pipe and pipe.scheduler is video and pipe.audio_scheduler is audio
+    assert video.step_index is audio.step_index is None
+    assert len(trace["video_timesteps"]) == len(trace["audio_timesteps"]) == 6
+    assert len(trace["video_sigmas"]) == len(trace["audio_sigmas"]) == 7
+    assert trace["video_sigmas"] != trace["audio_sigmas"]
+    assert trace["effective_strengths"] == gains
+
+    runtime.fault = "unfinished"
+    with pytest.raises(RuntimeError, match="complete every fixed interval"):
+        _sample(runtime, denoise, strengths=gains, record_native_grids=True)
+    assert pipe.scheduler is video and pipe.audio_scheduler is audio
+    assert not runtime.transformer._forward_pre_hooks
+    assert not runtime.transformer._forward_hooks
 
 
 @pytest.mark.parametrize("fault", ["changed_audio_grid", "changed_audio_begin", "replaced_final_scheduler", "unfinished"])
